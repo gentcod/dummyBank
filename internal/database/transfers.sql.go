@@ -7,23 +7,21 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const createTransfer = `-- name: CreateTransfer :one
-INSERT INTO transfers (id, sender_id, recipient_id, amount, created_at)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO transfers (id, sender_id, recipient_id, amount)
+VALUES ($1, $2, $3, $4)
 RETURNING id, sender_id, recipient_id, amount, created_at
 `
 
 type CreateTransferParams struct {
-	ID          uuid.UUID
-	SenderID    uuid.UUID
-	RecipientID uuid.UUID
-	Amount      int64
-	CreatedAt   time.Time
+	ID          uuid.UUID `json:"id"`
+	SenderID    uuid.UUID `json:"sender_id"`
+	RecipientID uuid.UUID `json:"recipient_id"`
+	Amount      int64     `json:"amount"`
 }
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
@@ -32,7 +30,6 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 		arg.SenderID,
 		arg.RecipientID,
 		arg.Amount,
-		arg.CreatedAt,
 	)
 	var i Transfer
 	err := row.Scan(
@@ -43,4 +40,63 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getTransfer = `-- name: GetTransfer :one
+SELECT id, sender_id, recipient_id, amount, created_at FROM transfers
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetTransfer(ctx context.Context, id uuid.UUID) (Transfer, error) {
+	row := q.db.QueryRowContext(ctx, getTransfer, id)
+	var i Transfer
+	err := row.Scan(
+		&i.ID,
+		&i.SenderID,
+		&i.RecipientID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getTransfers = `-- name: GetTransfers :many
+SELECT id, sender_id, recipient_id, amount, created_at FROM transfers
+ORDER BY created_at DESC
+LIMIT $1
+OFFSET $2
+`
+
+type GetTransfersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetTransfers(ctx context.Context, arg GetTransfersParams) ([]Transfer, error) {
+	rows, err := q.db.QueryContext(ctx, getTransfers, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transfer
+	for rows.Next() {
+		var i Transfer
+		if err := rows.Scan(
+			&i.ID,
+			&i.SenderID,
+			&i.RecipientID,
+			&i.Amount,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

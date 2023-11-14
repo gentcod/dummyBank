@@ -7,31 +7,81 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const createEntry = `-- name: CreateEntry :one
-INSERT INTO entries (id, account_id, amount, created_at)
-VALUES ($1, $2, $3, $4)
+INSERT INTO entries (id, account_id, amount)
+VALUES ($1, $2, $3)
 RETURNING id, account_id, amount, created_at
 `
 
 type CreateEntryParams struct {
-	ID        uuid.UUID
-	AccountID uuid.UUID
-	Amount    int64
-	CreatedAt time.Time
+	ID        uuid.UUID `json:"id"`
+	AccountID uuid.UUID `json:"account_id"`
+	Amount    int64     `json:"amount"`
 }
 
 func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
-	row := q.db.QueryRowContext(ctx, createEntry,
-		arg.ID,
-		arg.AccountID,
-		arg.Amount,
-		arg.CreatedAt,
+	row := q.db.QueryRowContext(ctx, createEntry, arg.ID, arg.AccountID, arg.Amount)
+	var i Entry
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.Amount,
+		&i.CreatedAt,
 	)
+	return i, err
+}
+
+const getEntries = `-- name: GetEntries :many
+SELECT id, account_id, amount, created_at FROM entries
+ORDER BY created_at DESC
+LIMIT $1
+OFFSET $2
+`
+
+type GetEntriesParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetEntries(ctx context.Context, arg GetEntriesParams) ([]Entry, error) {
+	rows, err := q.db.QueryContext(ctx, getEntries, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Entry
+	for rows.Next() {
+		var i Entry
+		if err := rows.Scan(
+			&i.ID,
+			&i.AccountID,
+			&i.Amount,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getEntry = `-- name: GetEntry :one
+SELECT id, account_id, amount, created_at FROM entries
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetEntry(ctx context.Context, id uuid.UUID) (Entry, error) {
+	row := q.db.QueryRowContext(ctx, getEntry, id)
 	var i Entry
 	err := row.Scan(
 		&i.ID,

@@ -7,23 +7,21 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const createAccount = `-- name: CreateAccount :one
-INSERT INTO accounts (id, owner, balance, currency, created_at)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, owner, balance, currency, created_at
+INSERT INTO accounts (id, owner, balance, currency)
+VALUES ($1, $2, $3, $4)
+RETURNING id, owner, balance, currency, created_at, updated_at
 `
 
 type CreateAccountParams struct {
-	ID        uuid.UUID
-	Owner     string
-	Balance   int64
-	Currency  string
-	CreatedAt time.Time
+	ID       uuid.UUID `json:"id"`
+	Owner    string    `json:"owner"`
+	Balance  int64     `json:"balance"`
+	Currency string    `json:"currency"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -32,7 +30,6 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		arg.Owner,
 		arg.Balance,
 		arg.Currency,
-		arg.CreatedAt,
 	)
 	var i Account
 	err := row.Scan(
@@ -41,12 +38,22 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.Balance,
 		&i.Currency,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
+const deleteAccount = `-- name: DeleteAccount :exec
+DELETE FROM accounts WHERE id = $1
+`
+
+func (q *Queries) DeleteAccount(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteAccount, id)
+	return err
+}
+
 const getAccount = `-- name: GetAccount :one
-SELECT id, owner, balance, currency, created_at FROM accounts
+SELECT id, owner, balance, currency, created_at, updated_at FROM accounts
 WHERE id = $1 LIMIT 1
 `
 
@@ -59,20 +66,21 @@ func (q *Queries) GetAccount(ctx context.Context, id uuid.UUID) (Account, error)
 		&i.Balance,
 		&i.Currency,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getAccounts = `-- name: GetAccounts :many
-SELECT id, owner, balance, currency, created_at FROM accounts
+SELECT id, owner, balance, currency, created_at, updated_at FROM accounts
 ORDER BY owner
 LIMIT $1
 OFFSET $2
 `
 
 type GetAccountsParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
 func (q *Queries) GetAccounts(ctx context.Context, arg GetAccountsParams) ([]Account, error) {
@@ -90,6 +98,7 @@ func (q *Queries) GetAccounts(ctx context.Context, arg GetAccountsParams) ([]Acc
 			&i.Balance,
 			&i.Currency,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -102,4 +111,29 @@ func (q *Queries) GetAccounts(ctx context.Context, arg GetAccountsParams) ([]Acc
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateAccount = `-- name: UpdateAccount :one
+UPDATE accounts SET balance = $2
+WHERE id = $1
+RETURNING id, owner, balance, currency, created_at, updated_at
+`
+
+type UpdateAccountParams struct {
+	ID      uuid.UUID `json:"id"`
+	Balance int64     `json:"balance"`
+}
+
+func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, updateAccount, arg.ID, arg.Balance)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
