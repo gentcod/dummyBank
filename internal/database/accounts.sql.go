@@ -7,21 +7,23 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createAccount = `-- name: CreateAccount :one
-INSERT INTO accounts (id, owner, balance, currency)
-VALUES ($1, $2, $3, $4)
+INSERT INTO accounts (id, owner, balance, currency, updated_at)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, owner, balance, currency, created_at, updated_at
 `
 
 type CreateAccountParams struct {
-	ID       uuid.UUID `json:"id"`
-	Owner    string    `json:"owner"`
-	Balance  int64     `json:"balance"`
-	Currency string    `json:"currency"`
+	ID        uuid.UUID `json:"id"`
+	Owner     string    `json:"owner"`
+	Balance   int64     `json:"balance"`
+	Currency  string    `json:"currency"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -30,6 +32,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		arg.Owner,
 		arg.Balance,
 		arg.Currency,
+		arg.UpdatedAt,
 	)
 	var i Account
 	err := row.Scan(
