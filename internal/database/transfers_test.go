@@ -11,9 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//Creates a random account for testing purposes and to avoid repition
 func createRandomTransfer(t *testing.T) Transfer {
-	account1 := CreateRandomAccount(t)
-	account2 := CreateRandomAccount(t)
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
 	arg := CreateTransferParams{
 		ID: uuid.New(),
 		SenderID: account1.ID,
