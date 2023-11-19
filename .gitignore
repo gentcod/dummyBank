@@ -3,3 +3,5 @@
 
 #Executable files
 *.exe
+
+.vscode

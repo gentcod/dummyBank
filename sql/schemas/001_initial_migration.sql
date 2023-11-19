@@ -10,7 +10,7 @@ CREATE TABLE accounts (
 
 CREATE TABLE entries (
    id uuid PRIMARY KEY,
-   account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+   account_id uuid NOT NULL REFERENCES accounts(id),
    amount BIGINT NOT NULL,
    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -22,6 +22,16 @@ CREATE TABLE transfers (
    amount BIGINT NOT NULL,
    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE INDEX ON "accounts" ("owner");
+
+CREATE INDEX ON "entries" ("account_id");
+
+CREATE INDEX ON "transfers" ("sender_id");
+
+CREATE INDEX ON "transfers" ("recipient_id");
+
+CREATE INDEX ON "transfers" ("sender_id", "recipient_id");
 
 -- +goose Down
 DROP TABLE transfers;
