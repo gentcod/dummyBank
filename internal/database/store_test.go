@@ -8,12 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// "context"
-// "database/sql"
-// "fmt"
-
-// "github.com/google/uuid"
-
 func TestTransferTx(t *testing.T) {
 	store := NewStore(testDB)
 
@@ -43,6 +37,8 @@ func TestTransferTx(t *testing.T) {
 	}
 
 	// check results
+	existed := make(map[int]bool)
+
 	for i := 0; i < n; i++ {
 		err := <-errs
 		require.NoError(t, err)
@@ -87,6 +83,37 @@ func TestTransferTx(t *testing.T) {
 		_, err = store.GetEntry(context.Background(), recipientEntry.ID)
 		require.NoError(t, err)
 
-		//TODO: check accounts balance
+		//check accounts
+		senderAccount := result.SenderAccount
+		require.NotEmpty(t, senderAccount)
+		require.Equal(t, account1.ID, senderAccount.ID)
+
+		recipientAccount := result.RecipientAccount
+		require.NotEmpty(t, recipientAccount)
+		require.Equal(t, account2.ID, recipientAccount.ID)
+
+		//check accounts balance
+		diff1 := account1.Balance - senderAccount.Balance
+		diff2 := recipientAccount.Balance - account2.Balance
+		require.Equal(t, diff1, diff2)
+		require.True(t, diff1 > 0)
+		require.True(t, diff1 % amount == 0)
+
+		k := int(diff1 / amount)
+		require.True(t, k >= 1 && k <= n)
+		require.NotContains(t, existed, k)
+		existed[k] = true
 	}
+
+	//check the final balances
+	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedAccount1)
+
+	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedAccount2)
+
+	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
+	require.Equal(t, account2.Balance+int64(n)*amount, updatedAccount2.Balance)
 }

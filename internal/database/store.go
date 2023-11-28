@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -56,6 +57,8 @@ type TransferTXResult struct {
 	RecipientEntry	Entry	`json:"recipient_entry"`
 }
 
+// var txKey = struct{}{}
+
 //Performs money transfer from one account to the other.
 //It creates a transfer record, adds account entries and update accounts' balance witthin a single database transaction
 func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTXResult, error){
@@ -64,6 +67,8 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
+		// txName := ctx.Value(txKey)
+		// fmt.Println(txName, "create transfer")
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			ID: uuid.New(),
 			SenderID: arg.SenderID,
@@ -74,6 +79,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
+		// fmt.Println(txName, "create sender entry")
 		result.SenderEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			ID: uuid.New(),
 			AccountID: arg.SenderID,
@@ -83,6 +89,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
+		// fmt.Println(txName, "create recipient entry")
 		result.RecipientEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			ID: uuid.New(),
 			AccountID: arg.RecipientID,
@@ -92,7 +99,36 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		//	TODO: update accounts' balance
+		// fmt.Println(txName, "get sender account for update")
+		senderAccount, err := q.GetAccountForUpdate(ctx, arg.SenderID)
+		if err != nil {
+			return err
+		}
+
+		// fmt.Println(txName, "update sender account")
+		result.SenderAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID: arg.SenderID,
+			Balance: senderAccount.Balance - arg.Amount,
+			UpdatedAt: time.Now(),
+		})
+		if err != nil {
+			return err
+		}
+
+		// fmt.Println(txName, "get sender account for update")
+		recipientAccount, err := q.GetAccountForUpdate(ctx, arg.RecipientID)
+		if err != nil {
+			return err
+		}
+		// fmt.Println(txName, "update sender account")
+		result.RecipientAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID: arg.RecipientID,
+			Balance: recipientAccount.Balance + arg.Amount,
+			UpdatedAt: time.Now(),
+		})
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
