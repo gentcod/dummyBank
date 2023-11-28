@@ -7,6 +7,11 @@ RETURNING *;
 SELECT * FROM accounts
 WHERE id = $1 LIMIT 1;
 
+-- name: GetAccountForUpdate :one
+SELECT * FROM accounts
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE;
+
 -- name: GetAccounts :many
 SELECT * FROM accounts
 ORDER BY owner
@@ -17,6 +22,11 @@ OFFSET $2;
 UPDATE accounts SET balance = $2, updated_at = $3
 WHERE id = $1
 RETURNING *;
+
+-- -- name: AddAccountBalance :one
+-- UPDATE accounts SET balance = balance + sqlc.arg(amount)::int64, updated_at = $3
+-- WHERE id = $1
+-- RETURNING *;
 
 -- name: DeleteAccount :exec
 DELETE FROM accounts WHERE id = $1;
