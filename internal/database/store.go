@@ -99,39 +99,60 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		// fmt.Println(txName, "get sender account for update")
-		senderAccount, err := q.GetAccountForUpdate(ctx, arg.SenderID)
-		if err != nil {
-			return err
-		}
+		//To handle deadlock: Sequentially update accounts
+		_, senderIntValue := arg.SenderID.Time().UnixTime()
+		_, recipientIntValue := arg.RecipientID.Time().UnixTime()
 
-		// fmt.Println(txName, "update sender account")
-		result.SenderAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
-			ID: arg.SenderID,
-			Balance: senderAccount.Balance - arg.Amount,
-			UpdatedAt: time.Now(),
-		})
-		if err != nil {
-			return err
+		if senderIntValue < recipientIntValue {
+			result.SenderAccount, result.RecipientAccount, err = addMoney(ctx, q, arg.SenderID, -arg.Amount, arg.RecipientID, arg.Amount)
+			if err != nil {
+				return err
+			}
+		} else {
+			result.RecipientAccount, result.SenderAccount, err = addMoney(ctx, q, arg.RecipientID, arg.Amount, arg.SenderID, -arg.Amount)
+			if err != nil {
+				return err
+			}
 		}
-
-		// fmt.Println(txName, "get sender account for update")
-		recipientAccount, err := q.GetAccountForUpdate(ctx, arg.RecipientID)
-		if err != nil {
-			return err
-		}
-		// fmt.Println(txName, "update sender account")
-		result.RecipientAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
-			ID: arg.RecipientID,
-			Balance: recipientAccount.Balance + arg.Amount,
-			UpdatedAt: time.Now(),
-		})
-		if err != nil {
-			return err
-		}
-
+		
 		return nil
 	})
 
 	return result, err
+}
+
+func addMoney(ctx context.Context, 
+	q *Queries, 
+	account1ID uuid.UUID,
+	amount1 int64, 
+	account2ID uuid.UUID, 
+	amount2 int64) (account1 Account, account2 Account, err error) {
+		senderAccount, err := q.GetAccountForUpdate(ctx, account1ID)
+		if err != nil {
+			return
+		}
+
+		account1, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID: senderAccount.ID,
+			Balance: senderAccount.Balance + amount1,
+			UpdatedAt: time.Now(),
+		})
+		if err != nil {
+			return
+		}
+
+		recipientAccount, err := q.GetAccountForUpdate(ctx, account2ID)
+		if err != nil {
+			return
+		}
+
+		account2, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID: recipientAccount.ID,
+			Balance: recipientAccount.Balance + amount2,
+			UpdatedAt: time.Now(),
+		})
+		if err != nil {
+			return
+		}
+	return
 }
