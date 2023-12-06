@@ -6,7 +6,7 @@ mysql:
 	docker run --name mysql8 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -d mysql:8
 
 postgres:
-	docker run --name postgres12 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
+	docker run --name postgres12 -p 5431:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
 
 createdb:
 	docker exec -it postgres12 createdb --username=root --owner=root dummy_bank
@@ -14,16 +14,13 @@ createdb:
 dropdb:
 	docker exex -it postgres12 dropdb dummy_bank
 
-migrateup:
-	migrate -path ./sql/schemas -database postgres://root:secret@localhost:5432/dummy_bank?sslmode=disable -verbose up
-
-migratedown:
-		migrate -path sql/schemas -database postgres://root:secret@localhost:5432/dummy_bank?sslmode=disable -verbose down
-
 gooseup:
-	goose -dir sql/schemas postgres postgres://root:secret@localhost:5432/dummy_bank?sslmode=disable up
+	goose -dir sql/schemas postgres postgres://root:secret@localhost:5431/dummy_bank?sslmode=disable up
+
+goosedown:
+	goose -dir sql/schemas postgres postgres://root:secret@localhost:5431/dummy_bank?sslmode=disable down
 
 test:
 	go test -v -cover ./...
 
-.PHONY: sqlc postgres createdb dropdb migrateup migratedown test
+.PHONY: sqlc postgres createdb dropdb gooseuo goosedown test
