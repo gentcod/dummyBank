@@ -15,7 +15,7 @@ dropdb:
 	docker exex -it postgres12 dropdb dummy_bank
 
 migrateup:
-	migrate -path sql/schemas -database "postgres://root:secret@localhost:5431/dummy_bank?sslmode=disable" -verbose up
+	migrate -path sql/schemas -database "postgres://root:secret@localhost:5432/dummy_bank?sslmode=disable" -verbose up
 
 migratedown:
 		migrate -path sql/schemas -database "postgres://root:secret@localhost:5432/dummy_bank?sslmode=disable" -verbose down
