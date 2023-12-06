@@ -41,6 +41,8 @@ jobs:
     - name: Install Goose
       run: |
         curl -fsSL \https://raw.githubusercontent.com/pressly/goose/master/install.sh |\sh
+        sudo mv goose /usr/bin/goose
+        which goose
 
     - name: Run migrations
       run: make gooseup
