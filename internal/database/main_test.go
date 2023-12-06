@@ -17,8 +17,8 @@ var testDB *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
-	godotenv.Load("../../.env")
-	dbSrc := os.Getenv("POSTGRES_DOCKER_CI_DB_URL")
+	godotenv.Load("../../prod.env")
+	dbSrc := os.Getenv("POSTGRES_DOCKER_DB_URL")
 
 	testDB, err = sql.Open(dbDriver, dbSrc)
 	if err != nil {
