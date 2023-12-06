@@ -21,7 +21,7 @@ migratedown:
 		migrate -path sql/schemas -database postgres://root:secret@localhost:5432/dummy_bank?sslmode=disable -verbose down
 
 gooseup:
-	goose postgres postgres://root:secret@localhost:5432/dummy_bank?sslmode=disable up
+	goose -dir sql/schemas postgres postgres://root:secret@localhost:5432/dummy_bank?sslmode=disable up
 
 test:
 	go test -v -cover ./...
