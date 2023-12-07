@@ -1,5 +1,5 @@
 #Environmental variables
-*.env
+dev.env
 
 #Executable files
 *.exe
