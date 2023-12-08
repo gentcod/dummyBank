@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//Creates a random account for testing purposes and to avoid repition
+//Creates a random entry for testing. Returns an entry object.
 func createRandomEntry(t *testing.T) Entry {
 	account1 := createRandomAccount(t)
 	arg := CreateEntryParams{

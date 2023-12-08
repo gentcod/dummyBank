@@ -121,6 +121,8 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 	return result, err
 }
 
+//Performs money transaction from a sender account to a recipients account.
+//Returns two account objects and an error object.
 func addMoney(ctx context.Context, 
 	q *Queries, 
 	account1ID uuid.UUID,
