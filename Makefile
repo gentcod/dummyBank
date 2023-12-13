@@ -23,4 +23,4 @@ goosedown:
 test:
 	go test -v -cover ./...
 
-.PHONY: sqlc postgres createdb dropdb gooseuo goosedown test
+.PHONY: sqlc postgres createdb dropdb gooseup goosedown test
