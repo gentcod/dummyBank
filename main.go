@@ -2,25 +2,21 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/gentcod/DummyBank/api"
 	db "github.com/gentcod/DummyBank/internal/database"
-	"github.com/joho/godotenv"
+	"github.com/gentcod/DummyBank/util"
 	_ "github.com/lib/pq"
 )
 
-const dbDriver = "postgres"
-
 func main() {
-	godotenv.Load("prod.env")
-	dbSrc := os.Getenv("POSTGRES_DOCKER_DB_URL")
-	port := os.Getenv("PORT")
-	portAddress := fmt.Sprintf("localhost:%v", port)
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config", err)
+	}
 
-	conn, err := sql.Open(dbDriver, dbSrc)
+	conn, err := sql.Open(config.DBDriver, config.DBUrl)
 	if err != nil {
 		log.Fatal("Couldn't connect to db:", err)
 	}
@@ -28,7 +24,7 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(portAddress)
+	err = server.Start(config.Port)
 	if err != nil {
 		log.Fatal("Couldn't start up server:", err)
 	}
