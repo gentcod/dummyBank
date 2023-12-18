@@ -6,22 +6,20 @@ import (
 	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
+	"github.com/gentcod/DummyBank/util"
 	_ "github.com/lib/pq"
 )
-
-const dbDriver = "postgres"
 
 var testQueries *Queries
 var testDB *sql.DB
 
 func TestMain(m *testing.M) {
-	var err error
-	// godotenv.Load("../../dev.env")
-	godotenv.Load("../../prod.env")
-	dbSrc := os.Getenv("POSTGRES_DOCKER_DB_URL")
+	config, err := util.LoadConfig("../..")
+	if err != nil {
+		log.Fatal("cannot load config", err)
+	}
 
-	testDB, err = sql.Open(dbDriver, dbSrc)
+	testDB, err = sql.Open(config.DBDriver, config.DBUrl)
 	if err != nil {
 		log.Fatal("Couldn't connect to db:", err)
 	}
