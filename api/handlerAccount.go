@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"time"
 
 	"net/http"
@@ -10,15 +11,21 @@ import (
 	"github.com/google/uuid"
 )
 
-type createAccounRequest struct {
+type createAccountRequest struct {
 	Owner     string    `json:"owner" binding:"required"`
 	Currency  string    `json:"currency" binding:"required,oneof=USD EUR"`
 }
 
+type updateAccountRequest struct {
+	AccountID string `json:"account_id" binding:"required,uuid"`
+	Balance   int64     `json:"balance" binding:"required,min=0"`
+}
+
 func(server *Server) createAccount(ctx *gin.Context) {
-	var req createAccounRequest
+	var req createAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
 	}
 
 	arg := db.CreateAccountParams{
@@ -38,15 +45,63 @@ func(server *Server) createAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, account)
 }
 
-func(server *Server) getAllAccounts(ctx *gin.Context) {
-	arg := db.GetAllAccountsParams{
-		Limit: 20,
-		Offset: 20,
+func(server *Server) updateAccount(ctx *gin.Context) {
+	var req updateAccountRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
 	}
 
-	accounts, err := server.store.GetAllAccounts(ctx, arg)
+	arg := db.UpdateAccountParams{
+		ID: uuid.MustParse(req.AccountID),
+		Balance: req.Balance,
+		UpdatedAt: time.Now(),
+	}
+
+	account, err := server.store.UpdateAccount(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, account)
+}
+
+func(server *Server) getAccountById(ctx *gin.Context) {
+	var req getEntityByIdRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	account, err := server.store.GetAccount(ctx, uuid.MustParse(req.Id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, account)
+}
+
+func(server *Server) getAccounts(ctx *gin.Context) {
+	var req pagination
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := db.GetAccountsParams{
+		Limit: req.PageSize,
+		Offset: (req.PageId - 1) * req.PageSize,
+	}
+
+	accounts, err := server.store.GetAccounts(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
 	ctx.JSON(http.StatusOK, accounts)

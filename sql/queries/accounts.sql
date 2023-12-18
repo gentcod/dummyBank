@@ -12,7 +12,7 @@ SELECT * FROM accounts
 WHERE id = $1 LIMIT 1
 FOR NO KEY UPDATE;
 
--- name: GetAllAccounts :many
+-- name: GetAccounts :many
 SELECT * FROM accounts
 ORDER BY owner
 LIMIT $1
