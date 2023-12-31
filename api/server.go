@@ -7,7 +7,7 @@ import (
 
 //Server serves HTTP requests for our banking service
 type Server struct {
-	store *db.Store
+	store db.Store
 	router *gin.Engine
 }
 
@@ -23,7 +23,7 @@ type getEntityByIdRequest struct {
 }
 
 //NewServer creates a new HTTP server amd setup routing
-func NewServer(store *db.Store) *Server {
+func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 
