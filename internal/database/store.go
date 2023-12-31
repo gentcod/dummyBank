@@ -9,21 +9,26 @@ import (
 	"github.com/google/uuid"
 )
 
-//Provides all functions to execute db queries and transactions
-type Store struct {
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTXResult, error)
+}
+
+//Provides all functions to execute db SQL queries and transactions
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db: db,
 		Queries: New(db),
 	}
 }
 
 //Executes a function within a database transaction
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -61,7 +66,7 @@ type TransferTXResult struct {
 
 //Performs money transfer from one account to the other.
 //It creates a transfer record, adds account entries and update accounts' balance witthin a single database transaction
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTXResult, error){
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTXResult, error){
 	var result TransferTXResult
 
 	err := store.execTx(ctx, func(q *Queries) error {

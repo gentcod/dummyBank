@@ -47,14 +47,9 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 }
 
 const deleteAccount = `-- name: DeleteAccount :exec
-
 DELETE FROM accounts WHERE id = $1
 `
 
-// -- name: AddAccountBalance :one
-// UPDATE accounts SET balance = balance + sqlc.arg(amount)::int64, updated_at = $3
-// WHERE id = $1
-// RETURNING *;
 func (q *Queries) DeleteAccount(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteAccount, id)
 	return err
