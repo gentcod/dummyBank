@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//Creates a random account for testing. Returns an account object.
+//createRandomAccount creates a random account for testing. Returns an account object.
 func createRandomAccount(t *testing.T) Account {
 	arg := CreateAccountParams{
 		ID: uuid.New(),
