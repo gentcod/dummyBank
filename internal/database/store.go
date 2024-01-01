@@ -9,12 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
+//Store provides all functions to execute db SQL queries and transactions
 type Store interface {
 	Querier
 	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTXResult, error)
 }
 
-//Provides all functions to execute db SQL queries and transactions
+//SQLStore provides all functions to execute db SQL queries
 type SQLStore struct {
 	*Queries
 	db *sql.DB
@@ -27,7 +28,7 @@ func NewStore(db *sql.DB) Store {
 	}
 }
 
-//Executes a function within a database transaction
+//execTx executes a function within a database transaction
 func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -46,14 +47,14 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 	return tx.Commit()
 }
 
-//Contains the necessary input parameters of the transfer transaction
+//TransferTxParams contains the necessary input parameters of the transfer transaction
 type TransferTxParams struct {
 	SenderID uuid.UUID `json:"sender_id"`
 	RecipientID uuid.UUID `json:"recipient_id"`
 	Amount int64 `json:"amount"`
 }
 
-//Contains the result of the transfer transaction
+//TransferTXResult contains the result of the transfer transaction
 type TransferTXResult struct {
 	Transfer	Transfer	`json:"transfer"`
 	SenderAccount	Account	`json:"sender_account"`
@@ -64,7 +65,7 @@ type TransferTXResult struct {
 
 // var txKey = struct{}{}
 
-//Performs money transfer from one account to the other.
+//TransferTx performs money transfer from one account to the other.
 //It creates a transfer record, adds account entries and update accounts' balance witthin a single database transaction
 func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTXResult, error){
 	var result TransferTXResult
@@ -126,7 +127,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 	return result, err
 }
 
-//Performs money transaction from a sender account to a recipients account.
+//addMoney performs money transaction from a sender account to a recipients account.
 //Returns two account objects and an error object.
 func addMoney(ctx context.Context, 
 	q *Queries, 
