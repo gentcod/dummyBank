@@ -37,3 +37,4 @@ CREATE INDEX ON "transfers" ("sender_id", "recipient_id");
 DROP TABLE transfers;
 DROP TABLE entries;
 DROP TABLE accounts;
+DROP TABLE users;

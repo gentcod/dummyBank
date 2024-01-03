@@ -18,7 +18,7 @@ import (
 )
 
 func TestGetAccountByIdAPI(t *testing.T) {
-	testServerInit(t, &testServer)
+	testServer := testServerInit(t)
 	account := randomAccount()
 
 	//Build stubs
@@ -34,7 +34,7 @@ func TestGetAccountByIdAPI(t *testing.T) {
 }
 
 func TestGetAccountsAPI(t *testing.T) {
-	testServerInit(t, &testServer)
+	testServer := testServerInit(t)
 
 	var pageId int32 = 1
 	var pageSize int32 = 10
@@ -56,13 +56,17 @@ func TestGetAccountsAPI(t *testing.T) {
 	requireBodyMatchAccounts(t, testServer.recorder.Body, accounts, int(pageSize))
 }
 
-//TODO: Implement code refractoring for test
+//TODO: Implement code refractoring for different test cases
+
+
 
 //randomAccount generates a random account
 func randomAccount() db.Account {
+	user := randomUser()
+
 	return db.Account{
 		ID: uuid.New(),
-		Owner: util.RandomOwner(),
+		Owner: user.ID,
 		Balance: util.RandomMoney(),
 		Currency: util.RandomCur(),
 	}
