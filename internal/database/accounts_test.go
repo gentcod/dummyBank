@@ -13,9 +13,11 @@ import (
 
 //createRandomAccount creates a random account for testing. Returns an account object.
 func createRandomAccount(t *testing.T) Account {
+	user := createRandomUser(t)
+
 	arg := CreateAccountParams{
 		ID: uuid.New(),
-		Owner: util.RandomOwner(),
+		Owner: user.ID,
 		Balance: util.RandomMoney(),
 		Currency: util.RandomCur(),
 		UpdatedAt: time.Now().UTC(),

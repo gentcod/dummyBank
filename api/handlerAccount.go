@@ -12,8 +12,8 @@ import (
 )
 
 type createAccountRequest struct {
-	Owner     string    `json:"owner" binding:"required"`
-	Currency  string    `json:"currency" binding:"required,oneof=USD EUR"`
+	Owner     string    `json:"owner" binding:"required,uuid"`
+	Currency  string    `json:"currency" binding:"required,currency`
 }
 
 type updateAccountRequest struct {
@@ -30,10 +30,9 @@ func(server *Server) createAccount(ctx *gin.Context) {
 
 	arg := db.CreateAccountParams{
 		ID: uuid.New(),
-		Owner: req.Owner,
+		Owner: uuid.MustParse(req.Owner),
 		Balance: 0,
 		Currency: req.Currency,
-		UpdatedAt: time.Now().UTC(),
 	}
 
 	account, err := server.store.CreateAccount(ctx, arg)
@@ -78,6 +77,7 @@ func(server *Server) getAccountById(ctx *gin.Context) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

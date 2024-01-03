@@ -1,6 +1,6 @@
 current_dir = $(shell pwd)
 sqlc:
-	docker run --rm -v $(current_dir):/src -w /src sqlc/sqlc generate 
+	docker run --rm -v $(current_dir):/src -w /src sqlc/sqlc generate
 
 mysql:
 	docker run --name mysql8 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -d mysql:8
@@ -12,7 +12,7 @@ createdb:
 	docker exec -it postgres12 createdb --username=root --owner=root dummy_bank
 
 dropdb:
-	docker exex -it postgres12 dropdb dummy_bank
+	docker exec -it postgres12 dropdb dummy_bank
 
 gooseup:
 	goose -dir sql/schemas postgres postgres://root:secret@localhost:5431/dummy_bank?sslmode=disable up

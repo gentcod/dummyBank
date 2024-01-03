@@ -20,7 +20,7 @@ RETURNING id, owner, balance, currency, created_at, updated_at
 
 type CreateAccountParams struct {
 	ID        uuid.UUID `json:"id"`
-	Owner     string    `json:"owner"`
+	Owner     uuid.UUID `json:"owner"`
 	Balance   int64     `json:"balance"`
 	Currency  string    `json:"currency"`
 	UpdatedAt time.Time `json:"updated_at"`

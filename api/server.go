@@ -3,6 +3,8 @@ package api
 import (
 	db "github.com/gentcod/DummyBank/internal/database"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 //Server serves HTTP requests for our banking service
@@ -26,6 +28,10 @@ type getEntityByIdRequest struct {
 func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
 
 	router.POST("/accounts", server.createAccount)
 	router.PATCH("accounts", server.updateAccount)
