@@ -26,4 +26,4 @@ test:
 mock:
 	mockgen -package mockdb -destination internal/database/mock/store.go github.com/gentcod/DummyBank/internal/database Store
 
-.PHONY: sqlc postgres createdb dropdb gooseup goosedown test mock 
+.PHONY: sqlc mysql postgres createdb dropdb gooseup goosedown test mock 
