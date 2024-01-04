@@ -2,18 +2,23 @@ package api
 
 import (
 	"database/sql"
-	"fmt"
+	"time"
+
+	// "fmt"
 	"net/http"
 
 	db "github.com/gentcod/DummyBank/internal/database"
+	"github.com/gentcod/DummyBank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
+//TODO: Implement password confirmation when updating account and password auth for getting account
+
 type createUserRequest struct {
-	Password string    `json:"password" binding:"required"`
 	FullName        string    `json:"full_name" binding:"required"`
 	Email           string    `json:"email" binding:"required"`
+	Password string    `json:"password" binding:"required"`
 }
 
 type updateUserRequest struct {
@@ -29,11 +34,17 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
+	hashedPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	arg := db.CreateUserParams{
 		ID: uuid.New(),
-		HarshedPassword: req.Password,
 		FullName: req.FullName,
 		Email: req.Email,
+		HarshedPassword: hashedPassword,
 	}
 
 	user, err := server.store.CreateUser(ctx, arg)
@@ -56,9 +67,69 @@ func(server *Server) updateUser(ctx *gin.Context) {
 		return
 	}
 
+	hashedNewPassword, err := util.HashPassword(req.NewPassword)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := db.UpdateUserParams{
+		ID: uuid.MustParse(req.UserID),
+		HarshedPassword: hashedNewPassword,
+		PasswordChangedAt: time.Now().UTC(),
+	}
+
+	updatedUser, err := server.store.UpdateUser(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updatedUser)
 }
 
-func (server *Server) validateUser(ctx *gin.Context, userId uuid.UUID, harshedPassword string) bool {
+func(server *Server) getUserById(ctx *gin.Context) {
+	var req getEntityByIdRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUserById(ctx, uuid.MustParse(req.Id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
+}
+
+func(server *Server) getUsers(ctx *gin.Context) {
+	var req pagination
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := db.GetUsersParams{
+		Limit: req.PageSize,
+		Offset: (req.PageId - 1) * req.PageSize,
+	}
+
+	users, err := server.store.GetUsers(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, users)
+}
+
+func (server *Server) validateUser(ctx *gin.Context, userId uuid.UUID, password string) bool {
 	user, err := server.store.GetUserById(ctx, userId)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -68,9 +139,9 @@ func (server *Server) validateUser(ctx *gin.Context, userId uuid.UUID, harshedPa
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return false
 	}
-
-	if user.HarshedPassword != harshedPassword {
-		err := fmt.Errorf("Wrong Password")
+	
+	err = util.CheckPassword(password, user.HarshedPassword)
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return false
 	}

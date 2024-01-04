@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//createRandomAccount creates a random account for testing. Returns an account object.
+//createRandomAccount creates a random Account for testing. Returns an Account object.
 func createRandomAccount(t *testing.T) Account {
 	user := createRandomUser(t)
 
@@ -20,7 +20,6 @@ func createRandomAccount(t *testing.T) Account {
 		Owner: user.ID,
 		Balance: util.RandomMoney(),
 		Currency: util.RandomCur(),
-		UpdatedAt: time.Now().UTC(),
 	}
 
 	account, err := testQueries.CreateAccount(context.Background(), arg)
@@ -32,6 +31,7 @@ func createRandomAccount(t *testing.T) Account {
 	require.Equal(t, arg.Currency, account.Currency)
 
 	require.NotZero(t, account.ID)
+	require.True(t, account.UpdatedAt.IsZero())
 	require.NotZero(t, account.CreatedAt)
 
 	return account 

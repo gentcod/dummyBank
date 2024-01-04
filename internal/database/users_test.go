@@ -11,23 +11,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//createRandomUser creates a random User for testing and returns a User object
 func createRandomUser(t *testing.T) User {
+	hashedPassword, err := util.HashPassword(util.RandomStr(10))
+	require.NoError(t, err)
+
 	arg := CreateUserParams{
 		ID: uuid.New(),
-		HarshedPassword: util.RandomStr(10),
 		FullName: util.RandomOwner(),
 		Email: util.RandomEmail(9),
+		HarshedPassword: hashedPassword,
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
-	require.Equal(t, arg.HarshedPassword, user.HarshedPassword)
 	require.Equal(t, arg.FullName, user.FullName)
 	require.Equal(t, arg.Email, user.Email)
+	require.Equal(t, arg.HarshedPassword, user.HarshedPassword)
 
 	require.NotZero(t, user.ID)
+	require.True(t, user.PasswordChangedAt.IsZero()) 
 	require.NotZero(t, user.CreatedAt)
 
 	return user
@@ -53,9 +58,12 @@ func TestGetUserById(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	user1 := createRandomUser(t)
+	hashedPassword, err := util.HashPassword(user1.HarshedPassword)
+	require.NoError(t, err)
+
 	arg := UpdateUserParams{
 		ID: user1.ID,
-		HarshedPassword: util.RandomStr(10),
+		HarshedPassword: hashedPassword,
 		PasswordChangedAt: time.Now(),
 	}
 
@@ -65,8 +73,9 @@ func TestUpdateUser(t *testing.T) {
 
 	require.Equal(t, user1.ID, user2.ID)
 	require.Equal(t, user1.FullName, user2.FullName)
-	require.Equal(t, arg.HarshedPassword, user2.HarshedPassword)
 	require.Equal(t, user1.Email, user2.Email)
+	require.Equal(t, arg.HarshedPassword, user2.HarshedPassword)
+
 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
 	require.WithinDuration(t, arg.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
 }

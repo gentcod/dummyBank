@@ -55,5 +55,5 @@ func RandomEmail(n int) string {
 
 	str := RandomStr(n)
 
-	return fmt.Sprintf(str,mails[rand.Intn(k)])
+	return fmt.Sprintf("%v@%v",str,mails[rand.Intn(k)])
 }
