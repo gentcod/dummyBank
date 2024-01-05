@@ -18,7 +18,7 @@ func TestGetUserByIdAPI(t *testing.T) {
 
 	testServer.mockStore.EXPECT().GetUserById(gomock.Any(), gomock.Eq(user.ID)).Return(user, nil)
 
-	url := fmt.Sprintf("/accounts/%v", user.ID.String())
+	url := fmt.Sprintf("/users/%v", user.ID.String())
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 
