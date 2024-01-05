@@ -46,4 +46,5 @@ jobs:
       run: make gooseup
 
     - name: Test
-      run: make test
+      run: |
+        make test

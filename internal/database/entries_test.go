@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//createRandomEntry creates a random entry for testing. Returns an entry object.
+//createRandomEntry creates a random Entry for testing. Returns an Entry object.
 func createRandomEntry(t *testing.T) Entry {
 	account1 := createRandomAccount(t)
 	arg := CreateEntryParams{

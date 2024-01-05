@@ -21,9 +21,9 @@ goosedown:
 	goose -dir sql/schemas postgres postgres://root:secret@localhost:5431/dummy_bank?sslmode=disable down
 
 test:
-	go test -v -cover ./...
+	go test -v -cover -short ./...
 
 mock:
 	mockgen -package mockdb -destination internal/database/mock/store.go github.com/gentcod/DummyBank/internal/database Store
 
-.PHONY: sqlc postgres createdb dropdb gooseup goosedown test mock 
+.PHONY: sqlc mysql postgres createdb dropdb gooseup goosedown test mock 
