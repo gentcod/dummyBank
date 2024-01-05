@@ -11,14 +11,15 @@ import (
 	"github.com/gentcod/DummyBank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 //TODO: Implement password confirmation when updating account and password auth for getting account
 
 type createUserRequest struct {
 	FullName        string    `json:"full_name" binding:"required"`
-	Email           string    `json:"email" binding:"required"`
-	Password string    `json:"password" binding:"required"`
+	Email           string    `json:"email" binding:"required, email"`
+	Password string    `json:"password" binding:"required, min=8"`
 }
 
 type updateUserRequest struct {
@@ -49,11 +50,26 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 	user, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name(){
+			case "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	userProfile := UserProfile{
+		ID: user.ID,
+		FullName: user.FullName,
+		Email: user.Email,
+		CreatedAt: user.CreatedAt,
+		PasswordChangedAt: user.PasswordChangedAt,
+	}
+
+	ctx.JSON(http.StatusOK, userProfile)
 }
 
 func(server *Server) updateUser(ctx *gin.Context) {
