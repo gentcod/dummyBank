@@ -19,7 +19,7 @@ import (
 
 func TestGetAccountByIdAPI(t *testing.T) {
 	testServer := testServerInit(t)
-	account := randomAccount()
+	account := randomAccount(t)
 
 	//Build stubs
 	testServer.mockStore.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account.ID)).Times(1).Return(account, nil)
@@ -43,7 +43,7 @@ func TestGetAccountsAPI(t *testing.T) {
 		Offset: (pageId - 1) * pageSize,
 	}
 
-	accounts := randomAccounts(int(pageSize))
+	accounts := randomAccounts(int(pageSize), t)
 
 	testServer.mockStore.EXPECT().GetAccounts(gomock.Any(), gomock.Eq(arg)).Times(1).Return(accounts, nil)
 
@@ -58,11 +58,13 @@ func TestGetAccountsAPI(t *testing.T) {
 
 //TODO: Implement code refractoring for different test cases
 
-
-
 //randomAccount generates a random account
-func randomAccount() db.Account {
-	user := randomUser()
+func randomAccount(t *testing.T) (account db.Account) {
+	user, password := randomUserAndPassword(t)
+	
+	if err := util.CheckPassword(password, user.HarshedPassword); err != nil {
+		return
+	}
 
 	return db.Account{
 		ID: uuid.New(),
@@ -73,11 +75,11 @@ func randomAccount() db.Account {
 }
 
 //randomAccounts generates random accounts
-func randomAccounts(num int) []db.Account {
+func randomAccounts(num int, t *testing.T) []db.Account {
 	var accounts []db.Account
 
 	for i := 0; i < int(num); i++ {
-		accounts = append(accounts, randomAccount())
+		accounts = append(accounts, randomAccount(t))
 	}
 	return accounts
 }
