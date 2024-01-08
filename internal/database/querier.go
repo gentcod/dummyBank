@@ -24,9 +24,6 @@ type Querier interface {
 	GetEntry(ctx context.Context, id uuid.UUID) (Entry, error)
 	GetTransfer(ctx context.Context, id uuid.UUID) (Transfer, error)
 	GetTransfers(ctx context.Context, arg GetTransfersParams) ([]Transfer, error)
-	GetUserById(ctx context.Context, id uuid.UUID) (User, error)
-	GetUserForUpdate(ctx context.Context, id uuid.UUID) (User, error)
-	GetUsers(ctx context.Context, arg GetUsersParams) ([]User, error)
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
