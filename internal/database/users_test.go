@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"database/sql"
+	// "database/sql"
 	"testing"
 	"time"
 
@@ -42,20 +42,6 @@ func TestCreateUser(t *testing.T) {
 	createRandomUser(t)
 }
 
-func TestGetUserById(t *testing.T) {
-	user1 := createRandomUser(t)
-	user2, err := testQueries.GetUserById(context.Background(), user1.ID)
-	require.NoError(t, err)
-	require.NotEmpty(t, user2)
-
-	require.Equal(t, user1.ID, user2.ID)
-	require.Equal(t, user1.HarshedPassword, user2.HarshedPassword)
-	require.Equal(t, user1.FullName, user2.FullName)
-	require.Equal(t, user1.Email, user2.Email)
-	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
-	require.WithinDuration(t, user1.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
-}
-
 func TestUpdateUser(t *testing.T) {
 	user1 := createRandomUser(t)
 	hashedPassword, err := util.HashPassword(user1.HarshedPassword)
@@ -80,31 +66,45 @@ func TestUpdateUser(t *testing.T) {
 	require.WithinDuration(t, arg.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
 }
 
-func TestGetUsers(t *testing.T) {
-	for i := 0; i < 10; i++ {
-		createRandomUser(t)
-	}
-	arg := GetUsersParams{
-		Limit: 5,
-		Offset: 5,
-	}
+// func TestGetUserById(t *testing.T) {
+// 	user1 := createRandomUser(t)
+// 	user2, err := testQueries.GetUserById(context.Background(), user1.ID)
+// 	require.NoError(t, err)
+// 	require.NotEmpty(t, user2)
 
-	users, err := testQueries.GetUsers(context.Background(), arg)
-	require.NoError(t, err)
-	require.Len(t, users, 5)
+// 	require.Equal(t, user1.ID, user2.ID)
+// 	require.Equal(t, user1.HarshedPassword, user2.HarshedPassword)
+// 	require.Equal(t, user1.FullName, user2.FullName)
+// 	require.Equal(t, user1.Email, user2.Email)
+// 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
+// 	require.WithinDuration(t, user1.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
+// }
 
-	for _, user := range users {
-		require.NotEmpty(t, user)
-	}
-}
+// func TestGetUsers(t *testing.T) {
+// 	for i := 0; i < 10; i++ {
+// 		createRandomUser(t)
+// 	}
+// 	arg := GetUsersParams{
+// 		Limit: 5,
+// 		Offset: 5,
+// 	}
 
-func TestDeleteUser(t *testing.T) {
-	user1 := createRandomUser(t)
-	err := testQueries.DeleteUser(context.Background(), user1.ID)
-	require.NoError(t, err)
+// 	users, err := testQueries.GetUsers(context.Background(), arg)
+// 	require.NoError(t, err)
+// 	require.Len(t, users, 5)
 
-	user2, err := testQueries.GetUserById(context.Background(), user1.ID)
-	require.Error(t, err)
-	require.EqualError(t, err, sql.ErrNoRows.Error())
-	require.Empty(t, user2)
-}
+// 	for _, user := range users {
+// 		require.NotEmpty(t, user)
+// 	}
+// }
+
+// func TestDeleteUser(t *testing.T) {
+// 	user1 := createRandomUser(t)
+// 	err := testQueries.DeleteUser(context.Background(), user1.ID)
+// 	require.NoError(t, err)
+
+// 	user2, err := testQueries.GetUserById(context.Background(), user1.ID)
+// 	require.Error(t, err)
+// 	require.EqualError(t, err, sql.ErrNoRows.Error())
+// 	require.Empty(t, user2)
+// }

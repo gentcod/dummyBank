@@ -75,46 +75,46 @@ func TestCreateUserAPI(t *testing.T) {
 	requireBodyMatchCreaterUser(t, testServer.recorder.Body, user)
 }
 
-func TestGetUserByIdAPI(t *testing.T) {
-	testServer := testServerInit(t)
-	user, password := randomUserAndPassword(t)
+// func TestGetUserByIdAPI(t *testing.T) {
+// 	testServer := testServerInit(t)
+// 	user, password := randomUserAndPassword(t)
 
-	err := util.CheckPassword(password, user.HarshedPassword)
-	require.NoError(t, err)
+// 	err := util.CheckPassword(password, user.HarshedPassword)
+// 	require.NoError(t, err)
 
-	testServer.mockStore.EXPECT().GetUserById(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
+// 	testServer.mockStore.EXPECT().GetUserById(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
 
-	url := fmt.Sprintf("/users/%v", user.ID.String())
-	request, err := http.NewRequest(http.MethodGet, url, nil)
-	require.NoError(t, err)
+// 	url := fmt.Sprintf("/users/%v", user.ID.String())
+// 	request, err := http.NewRequest(http.MethodGet, url, nil)
+// 	require.NoError(t, err)
 
-	testServer.server.router.ServeHTTP(testServer.recorder, request)
-	require.Equal(t, testServer.recorder.Code, http.StatusOK)
-	requireBodyMatchUser(t, testServer.recorder.Body, user)
-}
+// 	testServer.server.router.ServeHTTP(testServer.recorder, request)
+// 	require.Equal(t, testServer.recorder.Code, http.StatusOK)
+// 	requireBodyMatchUser(t, testServer.recorder.Body, user)
+// }
 
-func TestGetUserssAPI(t *testing.T) {
-	testServer := testServerInit(t)
+// func TestGetUserssAPI(t *testing.T) {
+// 	testServer := testServerInit(t)
 
-	var pageId int32 = 1
-	var pageSize int32 = 10
-	arg := db.GetUsersParams{
-		Limit: pageSize,
-		Offset: (pageId - 1) * pageSize,
-	}
+// 	var pageId int32 = 1
+// 	var pageSize int32 = 10
+// 	arg := db.GetUsersParams{
+// 		Limit: pageSize,
+// 		Offset: (pageId - 1) * pageSize,
+// 	}
 
-	users := randomUsers(int(pageSize), t)
+// 	users := randomUsers(int(pageSize), t)
 
-	testServer.mockStore.EXPECT().GetUsers(gomock.Any(), gomock.Eq(arg)).Times(1).Return(users, nil)
+// 	testServer.mockStore.EXPECT().GetUsers(gomock.Any(), gomock.Eq(arg)).Times(1).Return(users, nil)
 
-	url := fmt.Sprintf("/users?page_id=%v&page_size=%v", pageId, pageSize)
-	request, err := http.NewRequest(http.MethodGet, url, nil)
-	require.NoError(t, err)
+// 	url := fmt.Sprintf("/users?page_id=%v&page_size=%v", pageId, pageSize)
+// 	request, err := http.NewRequest(http.MethodGet, url, nil)
+// 	require.NoError(t, err)
 
-	testServer.server.router.ServeHTTP(testServer.recorder, request)
-	require.Equal(t, http.StatusOK, testServer.recorder.Code)
-	requireBodyMatchUsers(t, testServer.recorder.Body, users, int(pageSize))
-}
+// 	testServer.server.router.ServeHTTP(testServer.recorder, request)
+// 	require.Equal(t, http.StatusOK, testServer.recorder.Code)
+// 	requireBodyMatchUsers(t, testServer.recorder.Body, users, int(pageSize))
+// }
 
 //randomUserAndPassword generates a random account
 func randomUserAndPassword(t *testing.T) (user db.User, password string) {

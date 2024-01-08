@@ -1,6 +1,7 @@
 -- +goose Up
 CREATE TABLE users (
    id uuid PRIMARY KEY,
+   username VARCHAR NOT NULL,
    harshed_password VARCHAR NOT NULL,
    full_name VARCHAR NOT NULL,
    email VARCHAR UNIQUE NOT NULL,
@@ -28,19 +29,18 @@ ALTER TABLE "accounts" ADD CONSTRAINT "owner_currency_key" UNIQUE ("owner", "cur
 
 ALTER TABLE "accounts" ALTER COLUMN updated_at SET DEFAULT '0001-01-01 00:00:00Z';
 
+-- ---------------------------------------------------------
 -- +goose Down
-ALTER TABLE "accounts" IF EXISTS DROP CONSTRAINT IF EXISTS "owner_currency_key";
+ALTER TABLE "accounts" DROP CONSTRAINT IF EXISTS "owner_currency_key";
 
-ALTER TABLE "accounts" IF EXISTS DROP FOREIGN KEY ("owner");
+ALTER TABLE "accounts" ADD COLUMN owner_tempr VARCHAR;
 
-ALTER TABLE "accounts" IF EXISTS ADD COLUMN owner_tempr VARCHAR NOT NULL;
+UPDATE "accounts" SET owner_tempr = owner::varchar;
 
-UPDATE "accounts" IF EXISTS SET owner_tempr = owner::varchar;
+ALTER TABLE "accounts" DROP COLUMN "owner";
 
-ALTER TABLE "accounts" IF EXISTS DROP COLUMN "owner";
+ALTER TABLE "accounts" RENAME COLUMN owner_tempr TO owner;
 
-ALTER TABLE "accounts" IF EXISTS RENAME COLUMN owner_tempr TO owner;
-
-ALTER TABLE "accounts" IF EXISTS ALTER COLUMN updated_at SET DEFAULT now();
+ALTER TABLE "accounts" ALTER COLUMN updated_at SET DEFAULT now();
 
 DROP TABLE users;
