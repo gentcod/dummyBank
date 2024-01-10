@@ -22,7 +22,6 @@ func (server *Server) createEntry(ctx *gin.Context) {
 	}
 
 	arg := db.CreateEntryParams{
-		ID: uuid.New(),
 		AccountID: uuid.MustParse(req.AccountID),
 		Amount: req.Amount,
 	}
@@ -43,7 +42,7 @@ func(server *Server) getEntry(ctx *gin.Context) {
 		return
 	}
 
-	entry, err := server.store.GetEntry(ctx, uuid.MustParse(req.Id))
+	entry, err := server.store.GetEntry(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))

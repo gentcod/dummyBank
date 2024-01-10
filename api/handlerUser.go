@@ -1,7 +1,7 @@
 package api
 
 import (
-	"database/sql"
+	// "database/sql"
 	"time"
 
 	// "fmt"
@@ -79,9 +79,9 @@ func(server *Server) updateUser(ctx *gin.Context) {
 		return
 	}
 
-	if !server.validateUser(ctx, uuid.MustParse(req.UserID), req.Password) {
-		return
-	}
+	// if !server.validateUser(ctx, uuid.MustParse(req.UserID), req.Password) {
+	// 	return
+	// }
 
 	hashedNewPassword, err := util.HashPassword(req.NewPassword)
 	if err != nil {
@@ -104,63 +104,64 @@ func(server *Server) updateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, updatedUser)
 }
 
-func(server *Server) getUserById(ctx *gin.Context) {
-	var req getEntityByIdRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+// func(server *Server) getUserById(ctx *gin.Context) {
+// 	var req getEntityByIdRequest
+// 	if err := ctx.ShouldBindUri(&req); err != nil {
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
 
-	user, err := server.store.GetUserById(ctx, uuid.MustParse(req.Id))
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
+// 	user, err := server.store.GetUserById(ctx, uuid.MustParse(req.Id))
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+// 			return
+// 		}
+// 		ctx.JSON(http.StatusInternalServerError, err)
+// 		return
+// 	}
 
-	ctx.JSON(http.StatusOK, user)
-}
+// 	ctx.JSON(http.StatusOK, user)
+// }
 
-func(server *Server) getUsers(ctx *gin.Context) {
-	var req pagination
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+// func(server *Server) getUsers(ctx *gin.Context) {
+// 	var req pagination
+// 	if err := ctx.ShouldBindQuery(&req); err != nil {
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
 
-	arg := db.GetUsersParams{
-		Limit: req.PageSize,
-		Offset: (req.PageId - 1) * req.PageSize,
-	}
+// 	arg := db.GetUsersParams{
+// 		Limit: req.PageSize,
+// 		Offset: (req.PageId - 1) * req.PageSize,
+// 	}
 
-	users, err := server.store.GetUsers(ctx, arg)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+// 	users, err := server.store.GetUsers(ctx, arg)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+// 		return
+// 	}
 
-	ctx.JSON(http.StatusOK, users)
-}
+// 	ctx.JSON(http.StatusOK, users)
+// }
 
-func (server *Server) validateUser(ctx *gin.Context, userId uuid.UUID, password string) bool {
-	user, err := server.store.GetUserById(ctx, userId)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
-		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
-	}
+// func (server *Server) validateUser(ctx *gin.Context, userId uuid.UUID, password string) bool {
+// 	// user, err := server.store.GetUserById(ctx, userId)
+
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+// 			return false
+// 		}
+// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+// 		return false
+// 	}
 	
-	err = util.CheckPassword(password, user.HarshedPassword)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false
-	}
+// 	err = util.CheckPassword(password, user.HarshedPassword)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return false
+// 	}
 
-	return true
-}
+// 	return true
+// }

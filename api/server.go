@@ -20,8 +20,13 @@ type pagination struct {
 }
 
 //GetEntityByIdRequest is used to set binding request for uri using uuid 
-type getEntityByIdRequest struct {
+type getEntityByIdUUIDRequest struct {
 	Id string `uri:"id" binding:"required,uuid"`
+}
+
+//GetEntityByIdRequest is used to set binding request for uri using uuid 
+type getEntityByIdRequest struct {
+	Id int64 `uri:"id" binding:"required,min=1"`
 }
 
 //NewServer creates a new HTTP server amd setup routing
@@ -48,8 +53,7 @@ func NewServer(store db.Store) *Server {
 
 	router.POST("/users", server.createUser)
 	router.PATCH("/users", server.updateUser)
-	router.GET("/users", server.getUsers)
-	router.GET("/users/:id", server.getUserById)
+	// router.GET("/users", server.getUsers)67
 
 	server.router = router
 	return server

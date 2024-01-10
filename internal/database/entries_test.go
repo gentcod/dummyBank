@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/gentcod/DummyBank/util"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,7 +13,6 @@ import (
 func createRandomEntry(t *testing.T) Entry {
 	account1 := createRandomAccount(t)
 	arg := CreateEntryParams{
-		ID: uuid.New(),
 		AccountID: account1.ID,
 		Amount: util.RandomMoney(),
 	}

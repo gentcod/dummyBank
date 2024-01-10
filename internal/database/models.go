@@ -12,22 +12,22 @@ import (
 
 type Account struct {
 	ID        uuid.UUID `json:"id"`
-	Owner     uuid.UUID `json:"owner"`
 	Balance   int64     `json:"balance"`
 	Currency  string    `json:"currency"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Owner     uuid.UUID `json:"owner"`
 }
 
 type Entry struct {
-	ID        uuid.UUID `json:"id"`
+	ID        int64     `json:"id"`
 	AccountID uuid.UUID `json:"account_id"`
 	Amount    int64     `json:"amount"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type Transfer struct {
-	ID          uuid.UUID `json:"id"`
+	ID          int64     `json:"id"`
 	SenderID    uuid.UUID `json:"sender_id"`
 	RecipientID uuid.UUID `json:"recipient_id"`
 	Amount      int64     `json:"amount"`
@@ -36,6 +36,7 @@ type Transfer struct {
 
 type User struct {
 	ID                uuid.UUID `json:"id"`
+	Username          string    `json:"username"`
 	HarshedPassword   string    `json:"harshed_password"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`

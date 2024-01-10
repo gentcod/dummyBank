@@ -31,11 +31,11 @@ func(server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUserById(ctx, uuid.MustParse(req.UserID))
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	// user, err := server.store.GetUserById(ctx, uuid.MustParse(req.UserID))
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
 	arg := db.CreateAccountParams{
 		ID: uuid.New(),
@@ -60,8 +60,8 @@ func(server *Server) createAccount(ctx *gin.Context) {
 
 	userAccount := UserAccount{
 		ID: account.ID,
-		FullName: user.FullName,
-		Email: user.Email,
+		// FullName: user.FullName,
+		// Email: user.Email,
 		Balance: account.Balance,
 		Currency: account.Currency,
 		CreatedAt: account.CreatedAt,
@@ -94,7 +94,7 @@ func(server *Server) updateAccount(ctx *gin.Context) {
 }
 
 func(server *Server) getAccountById(ctx *gin.Context) {
-	var req getEntityByIdRequest
+	var req getEntityByIdUUIDRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

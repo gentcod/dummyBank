@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/gentcod/DummyBank/util"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +15,6 @@ func createRandomTransfer(t *testing.T) Transfer {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	arg := CreateTransferParams{
-		ID: uuid.New(),
 		SenderID: account1.ID,
 		RecipientID: account2.ID,
 		Amount: util.RandomMoney(),

@@ -76,7 +76,6 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 		// txName := ctx.Value(txKey)
 		// fmt.Println(txName, "create transfer")
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
-			ID: uuid.New(),
 			SenderID: arg.SenderID,
 			RecipientID: arg.RecipientID,
 			Amount: arg.Amount,
@@ -87,7 +86,6 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 
 		// fmt.Println(txName, "create sender entry")
 		result.SenderEntry, err = q.CreateEntry(ctx, CreateEntryParams{
-			ID: uuid.New(),
 			AccountID: arg.SenderID,
 			Amount: -arg.Amount,
 		})
@@ -97,7 +95,6 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 
 		// fmt.Println(txName, "create recipient entry")
 		result.RecipientEntry, err = q.CreateEntry(ctx, CreateEntryParams{
-			ID: uuid.New(),
 			AccountID: arg.RecipientID,
 			Amount: arg.Amount,
 		})
