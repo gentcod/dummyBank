@@ -20,14 +20,14 @@ type Account struct {
 }
 
 type Entry struct {
-	ID        uuid.UUID `json:"id"`
+	ID        int64     `json:"id"`
 	AccountID uuid.UUID `json:"account_id"`
 	Amount    int64     `json:"amount"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type Transfer struct {
-	ID          uuid.UUID `json:"id"`
+	ID          int64     `json:"id"`
 	SenderID    uuid.UUID `json:"sender_id"`
 	RecipientID uuid.UUID `json:"recipient_id"`
 	Amount      int64     `json:"amount"`

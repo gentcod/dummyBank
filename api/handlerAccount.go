@@ -94,7 +94,7 @@ func(server *Server) updateAccount(ctx *gin.Context) {
 }
 
 func(server *Server) getAccountById(ctx *gin.Context) {
-	var req getEntityByIdRequest
+	var req getEntityByIdUUIDRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

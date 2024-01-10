@@ -12,25 +12,19 @@ import (
 )
 
 const createTransfer = `-- name: CreateTransfer :one
-INSERT INTO transfers (id, sender_id, recipient_id, amount)
-VALUES ($1, $2, $3, $4)
+INSERT INTO transfers (sender_id, recipient_id, amount)
+VALUES ($1, $2, $3)
 RETURNING id, sender_id, recipient_id, amount, created_at
 `
 
 type CreateTransferParams struct {
-	ID          uuid.UUID `json:"id"`
 	SenderID    uuid.UUID `json:"sender_id"`
 	RecipientID uuid.UUID `json:"recipient_id"`
 	Amount      int64     `json:"amount"`
 }
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
-	row := q.db.QueryRowContext(ctx, createTransfer,
-		arg.ID,
-		arg.SenderID,
-		arg.RecipientID,
-		arg.Amount,
-	)
+	row := q.db.QueryRowContext(ctx, createTransfer, arg.SenderID, arg.RecipientID, arg.Amount)
 	var i Transfer
 	err := row.Scan(
 		&i.ID,
@@ -47,7 +41,7 @@ SELECT id, sender_id, recipient_id, amount, created_at FROM transfers
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetTransfer(ctx context.Context, id uuid.UUID) (Transfer, error) {
+func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
 	row := q.db.QueryRowContext(ctx, getTransfer, id)
 	var i Transfer
 	err := row.Scan(

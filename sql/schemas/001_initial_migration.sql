@@ -9,14 +9,14 @@ CREATE TABLE accounts (
 );
 
 CREATE TABLE entries (
-   id uuid PRIMARY KEY,
+   id bigserial PRIMARY KEY,
    account_id uuid NOT NULL REFERENCES accounts(id),
    amount BIGINT NOT NULL,
    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE transfers (
-   id uuid PRIMARY KEY,
+   id bigserial PRIMARY KEY,
    sender_id uuid NOT NULL REFERENCES accounts(id),
    recipient_id uuid NOT NULL REFERENCES accounts(id),
    amount BIGINT NOT NULL,

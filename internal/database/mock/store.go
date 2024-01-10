@@ -185,7 +185,7 @@ func (mr *MockStoreMockRecorder) GetEntries(arg0, arg1 interface{}) *gomock.Call
 }
 
 // GetEntry mocks base method.
-func (m *MockStore) GetEntry(arg0 context.Context, arg1 uuid.UUID) (db.Entry, error) {
+func (m *MockStore) GetEntry(arg0 context.Context, arg1 int64) (db.Entry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEntry", arg0, arg1)
 	ret0, _ := ret[0].(db.Entry)
@@ -200,7 +200,7 @@ func (mr *MockStoreMockRecorder) GetEntry(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // GetTransfer mocks base method.
-func (m *MockStore) GetTransfer(arg0 context.Context, arg1 uuid.UUID) (db.Transfer, error) {
+func (m *MockStore) GetTransfer(arg0 context.Context, arg1 int64) (db.Transfer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTransfer", arg0, arg1)
 	ret0, _ := ret[0].(db.Transfer)

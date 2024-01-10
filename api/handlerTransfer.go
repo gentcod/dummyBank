@@ -24,7 +24,7 @@ func(server *Server) getTransferById(ctx *gin.Context) {
 		return
 	}
 
-	entry, err := server.store.GetTransfer(ctx, uuid.MustParse(req.Id))
+	entry, err := server.store.GetTransfer(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
