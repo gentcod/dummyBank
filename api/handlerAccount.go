@@ -12,11 +12,12 @@ import (
 	"github.com/lib/pq"
 )
 
-//TODO: Implement User Validation to create and update an account
+//TODO: Implement User Validation to create an account
 
 type createAccountRequest struct {
-	UserID     string    `json:"user_id" binding:"required,uuid"`
-	Currency  string    `json:"currency" binding:"required,currency`
+	Username     string    `json:"user_id" binding:"required,alphanum"`
+	Password     string    `json:"password" binding:"required"`
+	Currency  string    `json:"currency" binding:"required,currency"`
 }
 
 type updateAccountRequest struct {
@@ -31,15 +32,14 @@ func(server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
-	// user, err := server.store.GetUserById(ctx, uuid.MustParse(req.UserID))
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	// 	return
-	// }
+	user, valid := server.validateUser(ctx, req.Username, req.Password)
+	if !valid {
+		return
+	}
 
 	arg := db.CreateAccountParams{
 		ID: uuid.New(),
-		Owner: uuid.MustParse(req.UserID),
+		Owner: user.ID,
 		Balance: 0,
 		Currency: req.Currency,
 	}
@@ -58,15 +58,7 @@ func(server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
-	userAccount := UserAccount{
-		ID: account.ID,
-		// FullName: user.FullName,
-		// Email: user.Email,
-		Balance: account.Balance,
-		Currency: account.Currency,
-		CreatedAt: account.CreatedAt,
-		UpdatedAt: account.UpdatedAt,
-	}
+	userAccount := getUserAccount(user, account)
 
 	ctx.JSON(http.StatusOK, userAccount)
 }
@@ -132,4 +124,16 @@ func(server *Server) getAccounts(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, accounts)
+}
+
+func getUserAccount(user db.User, account db.Account) UserAccount {
+	return UserAccount{
+		Username: user.Username,
+		FullName: user.FullName,
+		Email: user.Email,
+		Balance: account.Balance,
+		Currency: account.Currency,
+		CreatedAt: account.CreatedAt,
+		UpdatedAt: account.UpdatedAt,
+	}
 }

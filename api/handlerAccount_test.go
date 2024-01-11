@@ -18,7 +18,8 @@ import (
 )
 
 func TestGetAccountByIdAPI(t *testing.T) {
-	testServer := testServerInit(t)
+	testServer:= testServerInit(t)
+
 	account := randomAccount(t)
 
 	//Build stubs

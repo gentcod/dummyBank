@@ -1,6 +1,10 @@
 package util
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 //Config stores all configurations of the application.
 //The values are read from a config file or environment variables
@@ -8,6 +12,9 @@ type Config struct {
 	DBDriver string `mapstructure:"DB_DRIVER"`
 	DBUrl string `mapstructure:"DB_URL"`
 	Port string `mapstructure:"PORT_ADDRESS"`
+	SymmetricKey string `mapstructure:"SYMMETRIC_KEY"`
+	SecreyKey string `mapstructure:"SECRET_KEY"`
+	TokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

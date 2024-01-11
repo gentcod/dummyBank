@@ -4,10 +4,13 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	mockdb "github.com/gentcod/DummyBank/internal/database/mock"
+	"github.com/gentcod/DummyBank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
 )
 
 //TestServer contains all configurations to run mock db tests for the api
@@ -24,8 +27,16 @@ func testServerInit(t *testing.T) (testServer TestServer) {
 	defer ctrl.Finish()
 	testServer.mockStore = mockdb.NewMockStore(ctrl)
 
+	config := util.Config{
+		SymmetricKey: util.RandomStr(32),
+		TokenDuration: time.Minute,
+	}
+
 	//Start test server and send requests
-	testServer.server = NewServer(testServer.mockStore)
+	server, err := NewServer(config, testServer.mockStore)
+	require.NoError(t, err)
+
+	testServer.server = server
 	testServer.recorder = httptest.NewRecorder()
 	return testServer
 }

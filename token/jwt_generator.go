@@ -10,20 +10,20 @@ import (
 
 const minSecretKeySize = 32
 
-// JWTMaker is a JSON Web Token maker
-type JWTMaker struct {
+// JWTGenerator is a JSON Web Token maker
+type JWTGenerator struct {
 	secretKey string
 }
 
-func NewJWTMaker(secretKey string) (Maker, error) {
+func NewJWTGenerator(secretKey string) (Generator, error) {
 	if len(secretKey) < minSecretKeySize {
 		return nil, fmt.Errorf("invalid key size: must be at least %v characters", minSecretKeySize)
 	}
-	return &JWTMaker{secretKey}, nil
+	return &JWTGenerator{secretKey}, nil
 }
 
 //CreateToken creates a new token for a specific username and duration
-func(maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, error) {
+func(maker *JWTGenerator) CreateToken(username string, duration time.Duration) (string, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
 		return "", err
@@ -34,7 +34,7 @@ func(maker *JWTMaker) CreateToken(username string, duration time.Duration) (stri
 }
 
 //VerifyToken checks if the token is valid or not
-func(maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
+func(maker *JWTGenerator) VerifyToken(token string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrInvalidToken

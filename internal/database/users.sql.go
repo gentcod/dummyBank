@@ -56,6 +56,26 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getUser = `-- name: GetUser :one
+SELECT id, username, harshed_password, full_name, email, password_changed_at, created_at FROM users
+WHERE username = $1 LIMIT 1
+`
+
+func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.HarshedPassword,
+		&i.FullName,
+		&i.Email,
+		&i.PasswordChangedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users SET harshed_password = $2, password_changed_at = $3
 WHERE id = $1

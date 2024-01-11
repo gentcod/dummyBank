@@ -14,7 +14,7 @@ type createTransferRequest struct {
 	SenderID string `json:"sender_id" binding:"required,uuid"`
 	RecipientID string `json:"recipient_id" binding:"required,uuid"`
 	Amount    int64  `json:"amount" binding:"required,min=1"`
-	Currency  string    `json:"currency" binding:"required,currency`
+	Currency  string    `json:"currency" binding:"required,currency"`
 }
 
 func(server *Server) getTransferById(ctx *gin.Context) {
