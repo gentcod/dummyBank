@@ -5,15 +5,15 @@ import (
 	"time"
 
 	"github.com/gentcod/DummyBank/util"
-	"github.com/o1egl/paseto"
+	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/require"
 )
 
-func TestPasetoMaker(t *testing.T) {
+func TestJWTGenerator(t *testing.T) {
 	username := util.RandomOwner()
 	duration := time.Minute
 
-	maker, err := NewPasetoMaker(util.RandomStr(32))
+	maker, err := NewJWTGenerator(util.RandomStr(32))
 	require.NoError(t, err)
 
 	issuedAt := time.Now()
@@ -33,10 +33,10 @@ func TestPasetoMaker(t *testing.T) {
 	require.WithinDuration(t, expiredAt, payload.ExpiredAt, time.Second)
 }
 
-func TestExpiredPasetoToken(t *testing.T) {
+func TestExpiredJWTToken(t *testing.T) {
 	duration := time.Minute
 
-	maker, err := NewPasetoMaker(util.RandomStr(32))
+	maker, err := NewJWTGenerator(util.RandomStr(32))
 	require.NoError(t, err)
 
 	token, err := maker.CreateToken(util.RandomOwner(), -duration)
@@ -49,27 +49,27 @@ func TestExpiredPasetoToken(t *testing.T) {
 	require.Nil(t, payload)
 }
 
-func TestInvalidPasetoToken(t *testing.T) {
+func TestInvalidJWTToken(t *testing.T) {
 	//When secretKey length is invalid
 	secret1 := util.RandomStr(20)
 
-	maker1, err := NewPasetoMaker(secret1)
+	maker1, err := NewJWTGenerator(secret1)
 	require.Error(t, err)
 	require.Nil(t, maker1)
 
 	//When none signature token type is used
-	payloadInvalidSign, err := NewPayload(util.RandomOwner(), time.Minute)
+	payloadAlgNone, err := NewPayload(util.RandomOwner(), time.Minute)
 	require.NoError(t, err)
 
-	//Create Paseto Token with a different version
-	pasetoToken, err := paseto.NewV1().Encrypt([]byte(util.RandomStr(32)), payloadInvalidSign, nil)
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodNone, payloadAlgNone)
+	tokenAlg, err := jwtToken.SignedString(jwt.UnsafeAllowNoneSignatureType)
 	require.NoError(t, err)
 
-	makerInvalidSign, err := NewPasetoMaker(util.RandomStr(32))
+	makerAlg, err := NewJWTGenerator(util.RandomStr(32))
 	require.NoError(t, err)
 
-	payloadInvalidSign, err = makerInvalidSign.VerifyToken(pasetoToken)
+	payloadAlgNone, err = makerAlg.VerifyToken(tokenAlg)
 	require.Error(t, err)
 	require.EqualError(t, err,ErrInvalidToken.Error())
-	require.Nil(t, payloadInvalidSign)
+	require.Nil(t, payloadAlgNone)
 }

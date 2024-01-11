@@ -1,7 +1,7 @@
 package api
 
 import (
-	// "database/sql"
+	"database/sql"
 	"time"
 
 	// "fmt"
@@ -17,15 +17,10 @@ import (
 //TODO: Implement password confirmation when updating account and password auth for getting account
 
 type createUserRequest struct {
+	Username        string    `json:"username" binding:"required,alphanum"`
 	FullName        string    `json:"full_name" binding:"required"`
 	Email           string    `json:"email" binding:"required,email"`
 	Password string    `json:"password" binding:"required,min=8"`
-}
-
-type updateUserRequest struct {
-	UserID   string `json:"user_id" binding:"required,uuid"`
-	Password   string    `json:"password" binding:"required"`
-	NewPassword   string    `json:"new_password" binding:"required"`
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -43,6 +38,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 	arg := db.CreateUserParams{
 		ID: uuid.New(),
+		Username: req.Username,
 		FullName: req.FullName,
 		Email: req.Email,
 		HarshedPassword: hashedPassword,
@@ -61,15 +57,16 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	userProfile := UserProfile{
-		ID: user.ID,
-		FullName: user.FullName,
-		Email: user.Email,
-		CreatedAt: user.CreatedAt,
-		PasswordChangedAt: user.PasswordChangedAt,
-	}
+	userProfile := getUserProfile(user)
 
 	ctx.JSON(http.StatusOK, userProfile)
+}
+
+
+type updateUserRequest struct {
+	Username   string `json:"username" binding:"required,alphanum"`
+	Password   string    `json:"password" binding:"required"`
+	NewPassword   string    `json:"new_password" binding:"required"`
 }
 
 func(server *Server) updateUser(ctx *gin.Context) {
@@ -79,9 +76,10 @@ func(server *Server) updateUser(ctx *gin.Context) {
 		return
 	}
 
-	// if !server.validateUser(ctx, uuid.MustParse(req.UserID), req.Password) {
-	// 	return
-	// }
+	user, valid := server.validateUser(ctx, req.Username, req.Password)
+	if !valid {
+		return
+	}
 
 	hashedNewPassword, err := util.HashPassword(req.NewPassword)
 	if err != nil {
@@ -90,7 +88,7 @@ func(server *Server) updateUser(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		ID: uuid.MustParse(req.UserID),
+		ID: user.ID,
 		HarshedPassword: hashedNewPassword,
 		PasswordChangedAt: time.Now().UTC(),
 	}
@@ -104,64 +102,70 @@ func(server *Server) updateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, updatedUser)
 }
 
-// func(server *Server) getUserById(ctx *gin.Context) {
-// 	var req getEntityByIdRequest
-// 	if err := ctx.ShouldBindUri(&req); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return
-// 	}
+//TODO: Implement multiple login methods; username or password
+type loginUserRequest struct {
+	Username        string    `json:"username" binding:"required,alphanum"`
+	Password string    `json:"password" binding:"required,min=8"`
+}
 
-// 	user, err := server.store.GetUserById(ctx, uuid.MustParse(req.Id))
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-// 			return
-// 		}
-// 		ctx.JSON(http.StatusInternalServerError, err)
-// 		return
-// 	}
+type loginUserResponse struct {
+	AccessToken string `json:"access_token"`
+	User UserProfile `json:"user"`
+}
 
-// 	ctx.JSON(http.StatusOK, user)
-// }
+func (server *Server) loginUser(ctx *gin.Context) {
+	var req loginUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
 
-// func(server *Server) getUsers(ctx *gin.Context) {
-// 	var req pagination
-// 	if err := ctx.ShouldBindQuery(&req); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return
-// 	}
+	user, valid := server.validateUser(ctx, req.Username, req.Password)
+	if !valid {
+		return
+	}
 
-// 	arg := db.GetUsersParams{
-// 		Limit: req.PageSize,
-// 		Offset: (req.PageId - 1) * req.PageSize,
-// 	}
+	accessToken, err := server.tokenGenerator.CreateToken(req.Username, server.config.TokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
 
-// 	users, err := server.store.GetUsers(ctx, arg)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-// 		return
-// 	}
+	userProfile := getUserProfile(user)
 
-// 	ctx.JSON(http.StatusOK, users)
-// }
+	resp := loginUserResponse{
+		AccessToken: accessToken,
+		User: userProfile,
+	}
 
-// func (server *Server) validateUser(ctx *gin.Context, userId uuid.UUID, password string) bool {
-// 	// user, err := server.store.GetUserById(ctx, userId)
+	ctx.JSON(http.StatusOK, resp)
+}
 
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-// 			return false
-// 		}
-// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-// 		return false
-// 	}
+func (server *Server) validateUser(ctx *gin.Context, username string, password string) (db.User, bool) {
+	user, err := server.store.GetUser(ctx, username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return user, false
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return user, false
+	}
 	
-// 	err = util.CheckPassword(password, user.HarshedPassword)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return false
-// 	}
+	err = util.CheckPassword(password, user.HarshedPassword)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return user, false
+	}
 
-// 	return true
-// }
+	return user, true
+}
+
+func getUserProfile(user db.User) UserProfile {
+	return UserProfile{
+		Username: user.Username,
+		FullName: user.FullName,
+		Email: user.Email,
+		CreatedAt: user.CreatedAt,
+		PasswordChangedAt: user.PasswordChangedAt,
+	}
+}

@@ -8,5 +8,9 @@ UPDATE users SET harshed_password = $2, password_changed_at = $3
 WHERE id = $1
 RETURNING *;
 
+-- name: GetUser :one
+SELECT * FROM users
+WHERE username = $1 LIMIT 1;
+
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;

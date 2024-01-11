@@ -47,9 +47,11 @@ func EqCreateUserParams(arg db.CreateUserParams, password string) gomock.Matcher
 
 func TestCreateUserAPI(t *testing.T) {
 	testServer := testServerInit(t)
+
 	user, password := randomUserAndPassword(t)
 
 	requestBody := gin.H{
+		"username": user.Username,
 		"full_Name": user.FullName,
 		"email": user.Email,
 		"password": password,
@@ -57,6 +59,7 @@ func TestCreateUserAPI(t *testing.T) {
 
 	arg := db.CreateUserParams{
 		ID: uuid.New(),
+		Username: user.Username,
 		FullName: user.FullName,
 		Email: user.Email,
 		HarshedPassword: user.HarshedPassword,
@@ -93,29 +96,6 @@ func TestCreateUserAPI(t *testing.T) {
 // 	requireBodyMatchUser(t, testServer.recorder.Body, user)
 // }
 
-// func TestGetUserssAPI(t *testing.T) {
-// 	testServer := testServerInit(t)
-
-// 	var pageId int32 = 1
-// 	var pageSize int32 = 10
-// 	arg := db.GetUsersParams{
-// 		Limit: pageSize,
-// 		Offset: (pageId - 1) * pageSize,
-// 	}
-
-// 	users := randomUsers(int(pageSize), t)
-
-// 	testServer.mockStore.EXPECT().GetUsers(gomock.Any(), gomock.Eq(arg)).Times(1).Return(users, nil)
-
-// 	url := fmt.Sprintf("/users?page_id=%v&page_size=%v", pageId, pageSize)
-// 	request, err := http.NewRequest(http.MethodGet, url, nil)
-// 	require.NoError(t, err)
-
-// 	testServer.server.router.ServeHTTP(testServer.recorder, request)
-// 	require.Equal(t, http.StatusOK, testServer.recorder.Code)
-// 	requireBodyMatchUsers(t, testServer.recorder.Body, users, int(pageSize))
-// }
-
 //randomUserAndPassword generates a random account
 func randomUserAndPassword(t *testing.T) (user db.User, password string) {
 	password = util.RandomStr(9)
@@ -125,20 +105,10 @@ func randomUserAndPassword(t *testing.T) (user db.User, password string) {
 	return db.User{
 		ID: uuid.New(),
 		HarshedPassword: hashedPassword,
+		Username: util.RandomOwner(),
 		FullName: util.RandomOwner(),
 		Email: util.RandomEmail(9),
 	}, password
-}
-
-//randomUsers generates random accounts
-func randomUsers(num int, t *testing.T) []db.User {
-	var users []db.User
-
-	for i := 0; i < int(num); i++ {
-		user, _ := randomUserAndPassword(t)
-		users = append(users, user)
-	}
-	return users
 }
 
 //requireBodyMatchCreateruser checks if the server recorder body for creatUser matches the user object
@@ -162,18 +132,4 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	err = json.Unmarshal(data, &getUser)
 	require.NoError(t, err)
 	require.Equal(t, user, getUser)
-}
-
-//requireBodyMatchusers checks if the server recorder body matches the users object
-func requireBodyMatchUsers(t *testing.T, body *bytes.Buffer, users []db.User, num int) {
-	data, err := io.ReadAll(body)
-	require.NoError(t, err)
-
-	var getUser []db.User
-	err = json.Unmarshal(data, &getUser)
-	require.NoError(t, err)
-
-	for i := 0; i < num; i++ {
-		require.Equal(t, users[i], getUser[i])
-	}
 }

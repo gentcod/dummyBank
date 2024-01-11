@@ -2,12 +2,11 @@ package api
 
 import (
 	"time"
-	"github.com/google/uuid"
 )
 
 //UserAccount contains the details of account created with userId
 type UserAccount struct {
-	ID                uuid.UUID `json:"id"`
+	Username        string    `json:"username" binding:"required,alphanum"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
 	Balance   int64     `json:"balance"`
@@ -18,7 +17,7 @@ type UserAccount struct {
 
 //
 type UserProfile struct {
-	ID                uuid.UUID `json:"id"`
+	Username        string    `json:"username" binding:"required,alphanum"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
 	CreatedAt         time.Time `json:"created_at"`
