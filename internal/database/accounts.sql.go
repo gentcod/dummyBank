@@ -13,17 +13,16 @@ import (
 )
 
 const createAccount = `-- name: CreateAccount :one
-INSERT INTO accounts (id, owner, balance, currency, updated_at)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO accounts (id, owner, balance, currency)
+VALUES ($1, $2, $3, $4)
 RETURNING id, balance, currency, created_at, updated_at, owner
 `
 
 type CreateAccountParams struct {
-	ID        uuid.UUID `json:"id"`
-	Owner     uuid.UUID `json:"owner"`
-	Balance   int64     `json:"balance"`
-	Currency  string    `json:"currency"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID       uuid.UUID `json:"id"`
+	Owner    uuid.UUID `json:"owner"`
+	Balance  int64     `json:"balance"`
+	Currency string    `json:"currency"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -32,7 +31,6 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		arg.Owner,
 		arg.Balance,
 		arg.Currency,
-		arg.UpdatedAt,
 	)
 	var i Account
 	err := row.Scan(
@@ -96,18 +94,20 @@ func (q *Queries) GetAccountForUpdate(ctx context.Context, id uuid.UUID) (Accoun
 
 const getAccounts = `-- name: GetAccounts :many
 SELECT id, balance, currency, created_at, updated_at, owner FROM accounts
+WHERE owner = $1
 ORDER BY owner
-LIMIT $1
-OFFSET $2
+LIMIT $2
+OFFSET $3
 `
 
 type GetAccountsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Owner  uuid.UUID `json:"owner"`
+	Limit  int32     `json:"limit"`
+	Offset int32     `json:"offset"`
 }
 
 func (q *Queries) GetAccounts(ctx context.Context, arg GetAccountsParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, getAccounts, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getAccounts, arg.Owner, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

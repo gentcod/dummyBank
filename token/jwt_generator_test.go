@@ -6,6 +6,7 @@ import (
 
 	"github.com/gentcod/DummyBank/util"
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +20,7 @@ func TestJWTGenerator(t *testing.T) {
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	token, err := maker.CreateToken(username, duration)
+	token, err := maker.CreateToken(username, uuid.New(), duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	
@@ -39,7 +40,7 @@ func TestExpiredJWTToken(t *testing.T) {
 	maker, err := NewJWTGenerator(util.RandomStr(32))
 	require.NoError(t, err)
 
-	token, err := maker.CreateToken(util.RandomOwner(), -duration)
+	token, err := maker.CreateToken(util.RandomOwner(), uuid.New(), -duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	
@@ -58,7 +59,7 @@ func TestInvalidJWTToken(t *testing.T) {
 	require.Nil(t, maker1)
 
 	//When none signature token type is used
-	payloadAlgNone, err := NewPayload(util.RandomOwner(), time.Minute)
+	payloadAlgNone, err := NewPayload(util.RandomOwner(), uuid.New(), time.Minute)
 	require.NoError(t, err)
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodNone, payloadAlgNone)

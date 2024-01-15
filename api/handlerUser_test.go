@@ -122,14 +122,3 @@ func requireBodyMatchCreaterUser(t *testing.T, body *bytes.Buffer, user db.User)
 	require.Equal(t, user.FullName, getUser.FullName)
 	require.Equal(t, user.Email, getUser.Email)
 }
-
-//requireBodyMatchuser checks if the server recorder body matches the user object
-func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
-	data, err := io.ReadAll(body)
-	require.NoError(t, err)
-
-	var getUser db.User
-	err = json.Unmarshal(data, &getUser)
-	require.NoError(t, err)
-	require.Equal(t, user, getUser)
-}
