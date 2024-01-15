@@ -22,6 +22,19 @@ type createTransferRequest struct {
 	Currency    string `json:"currency" binding:"required,currency"`
 }
 
+type RecipientAccountResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Currency  string    `json:"currency"`
+	Owner     uuid.UUID `json:"owner"`
+}
+
+type createTransferResponse struct {
+	Transfer	db.Transfer	`json:"transfer"`
+	SenderAccount db.Account `json:"sender_account"`
+	RecipientAccount RecipientAccountResponse `json:"recipient_account"`
+	SenderEntry	db.Entry	`json:"sender_entry"`
+}
+
 func (server *Server) getTransferById(ctx *gin.Context) {
 	var req getEntityByIdRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -97,7 +110,18 @@ func (server *Server) createTransferTx(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, transfer)
+	resp := createTransferResponse{
+		Transfer: transfer.Transfer,
+		SenderAccount: transfer.SenderAccount,
+		RecipientAccount: RecipientAccountResponse{
+			ID: transfer.RecipientAccount.ID,
+			Currency: transfer.RecipientAccount.Currency,
+			Owner: transfer.RecipientAccount.Owner,
+		},
+		SenderEntry: transfer.SenderEntry,
+	}
+
+	ctx.JSON(http.StatusOK, resp)
 }
 
 func (server *Server) validateAccount(ctx *gin.Context, accountId uuid.UUID, currency string) (db.Account, bool) {

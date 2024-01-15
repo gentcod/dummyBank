@@ -5,7 +5,7 @@ CREATE TABLE accounts (
    balance BIGINT NOT NULL,
    currency VARCHAR NOT NULL,
    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-   updated_at TIMESTAMPTZ NOT NULL
+   updated_at TIMESTAMPTZ NOT NULL DEFAULT '0001-01-01 00:00:00Z'
 );
 
 CREATE TABLE entries (
