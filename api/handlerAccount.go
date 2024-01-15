@@ -2,21 +2,19 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
 	"net/http"
 
 	db "github.com/gentcod/DummyBank/internal/database"
+	"github.com/gentcod/DummyBank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
-//TODO: Implement User Validation to create an account
-
 type createAccountRequest struct {
-	Username     string    `json:"user_id" binding:"required,alphanum"`
-	Password     string    `json:"password" binding:"required"`
 	Currency  string    `json:"currency" binding:"required,currency"`
 }
 
@@ -32,14 +30,10 @@ func(server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
-	user, valid := server.validateUser(ctx, req.Username, req.Password)
-	if !valid {
-		return
-	}
-
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.CreateAccountParams{
 		ID: uuid.New(),
-		Owner: user.ID,
+		Owner: authPayload.UserID,
 		Balance: 0,
 		Currency: req.Currency,
 	}
@@ -58,7 +52,7 @@ func(server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
-	userAccount := getUserAccount(user, account)
+	userAccount := getUserAccount(authPayload.Username, account)
 
 	ctx.JSON(http.StatusOK, userAccount)
 }
@@ -102,6 +96,13 @@ func(server *Server) getAccountById(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.ID {
+		err := errors.New("account doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -112,7 +113,9 @@ func(server *Server) getAccounts(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.GetAccountsParams{
+		Owner: authPayload.UserID,
 		Limit: req.PageSize,
 		Offset: (req.PageId - 1) * req.PageSize,
 	}
@@ -126,11 +129,9 @@ func(server *Server) getAccounts(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, accounts)
 }
 
-func getUserAccount(user db.User, account db.Account) UserAccount {
+func getUserAccount(username string, account db.Account) UserAccount {
 	return UserAccount{
-		Username: user.Username,
-		FullName: user.FullName,
-		Email: user.Email,
+		Username: username,
 		Balance: account.Balance,
 		Currency: account.Currency,
 		CreatedAt: account.CreatedAt,

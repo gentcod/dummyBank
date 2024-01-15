@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gentcod/DummyBank/util"
+	"github.com/google/uuid"
 	"github.com/o1egl/paseto"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +20,7 @@ func TestPasetoGenerator(t *testing.T) {
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	token, err := maker.CreateToken(username, duration)
+	token, err := maker.CreateToken(username, uuid.New(), duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	
@@ -39,7 +40,7 @@ func TestExpiredPasetoToken(t *testing.T) {
 	maker, err := NewPasetoGenerator(util.RandomStr(32))
 	require.NoError(t, err)
 
-	token, err := maker.CreateToken(util.RandomOwner(), -duration)
+	token, err := maker.CreateToken(util.RandomOwner(), uuid.New(), -duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	
@@ -58,7 +59,7 @@ func TestInvalidPasetoToken(t *testing.T) {
 	require.Nil(t, maker1)
 
 	//When none signature token type is used
-	payloadInvalidSign, err := NewPayload(util.RandomOwner(), time.Minute)
+	payloadInvalidSign, err := NewPayload(util.RandomOwner(), uuid.New(), time.Minute)
 	require.NoError(t, err)
 
 	//Create Paseto Token with a different version
