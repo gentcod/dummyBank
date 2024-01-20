@@ -33,7 +33,6 @@ CREATE INDEX ON "transfers" ("recipient_id");
 
 CREATE INDEX ON "transfers" ("sender_id", "recipient_id");
 
--- ---------------------------------------------------------
 -- +goose Down
 DROP TABLE transfers;
 DROP TABLE entries;
