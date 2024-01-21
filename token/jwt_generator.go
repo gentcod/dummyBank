@@ -16,6 +16,7 @@ type JWTGenerator struct {
 	secretKey string
 }
 
+// NewJWTGenerator creates a new JWT Token Generator object
 func NewJWTGenerator(secretKey string) (Generator, error) {
 	if len(secretKey) < minSecretKeySize {
 		return nil, fmt.Errorf("invalid key size: must be at least %v characters", minSecretKeySize)
