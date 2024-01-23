@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE users (
    id uuid PRIMARY KEY,
-   username VARCHAR NOT NULL,
+   username VARCHAR UNIQUE NOT NULL,
    harshed_password VARCHAR NOT NULL,
    full_name VARCHAR NOT NULL,
    email VARCHAR UNIQUE NOT NULL,
