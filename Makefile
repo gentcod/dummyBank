@@ -20,6 +20,9 @@ gooseup:
 goosedown:
 	goose -dir sql/schemas postgres postgres://root:secret@localhost:5431/dummy_bank?sslmode=disable down
 
+gooseamzup:
+	goose -dir sql/schemas postgres postgres://root:vEBHqjW5vUa2w2off1oO@dummy-bank.c9syk8882r4p.eu-west-2.rds.amazonaws.com:5432/dummy_bank up
+
 test:
 	go test -v -cover -short ./...
 
