@@ -12,8 +12,8 @@ type Config struct {
 	DBDriver string `mapstructure:"DB_DRIVER"`
 	DBUrl string `mapstructure:"DB_URL"`
 	Port string `mapstructure:"PORT_ADDRESS"`
-	SymmetricKey string `mapstructure:"SYMMETRIC_KEY"`
-	SecreyKey string `mapstructure:"SECRET_KEY"`
+	SymmetricKey string `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	SecretKey string `mapstructure:"TOKEN_SECRET_KEY"`
 	TokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 }
 
