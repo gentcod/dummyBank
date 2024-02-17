@@ -8,11 +8,10 @@ RUN go build -o main main.go
 FROM alpine:3.18 AS alpine
 WORKDIR /app
 COPY --from=builder /app/main .
-COPY --from=alpine /app/main .
 COPY app.env .
-COPY sql/schemas /app/sql/schemas
+COPY sql/migrations /app/sql/migrations
 ADD start.sh .
-RUN chmod +x /app/sql/schemas/start.sh
+RUN chmod +x /app/start.sh
 
 EXPOSE 5000
 ENTRYPOINT [ "/app/start.sh" ]
