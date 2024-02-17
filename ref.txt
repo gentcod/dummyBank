@@ -6,4 +6,4 @@ Step 1:
 
 Step 2:
    psql -h hostname(localhost) -U postgres_username(root) -d database_name(dummy_bank)
-   -  This enables interaction with the database that was created
+   -  This enables interaction with the database that was createdpq

@@ -5,3 +5,4 @@ dev.env
 *.exe
 
 .vscode
+*docker-compose.yaml
