@@ -10,9 +10,8 @@ WORKDIR /app
 COPY --from=builder /app/main .
 COPY app.env .
 COPY sql/migrations /app/sql/migrations
-ADD start.sh .
+COPY start.sh .
 RUN chmod +x /app/start.sh
 
 EXPOSE 5000
-ENTRYPOINT [ "/app/start.sh" ]
 CMD ["/app/main"]
