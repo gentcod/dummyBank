@@ -69,7 +69,7 @@ func TestCreateUserAPI(t *testing.T) {
 	require.NoError(t, err)
 
 	testServer.mockStore.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user, nil)
-	url := "/users"
+	url := "/api/v1/user/signup"
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 

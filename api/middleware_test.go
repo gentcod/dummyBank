@@ -82,7 +82,7 @@ func TestAuthMiddleware(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testServer := testServerInit(t)
 
-			authPath := "/auth"
+			authPath := "/api/v1/auth"
 			testServer.server.router.GET(authPath, authMiddleware(testServer.server.tokenGenerator), func(ctx *gin.Context) {
 				ctx.JSON(http.StatusOK, gin.H{})
 			})

@@ -26,7 +26,7 @@ func TestGetAccountByIdAPI(t *testing.T) {
 	//Build stubs
 	testServer.mockStore.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account.ID)).Times(1).Return(account, nil)
 
-	url := fmt.Sprintf("/accounts/%v", account.ID.String())
+	url := fmt.Sprintf("/api/v1/accounts/%v", account.ID.String())
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 
@@ -49,7 +49,7 @@ func TestGetAccountsAPI(t *testing.T) {
 
 	testServer.mockStore.EXPECT().GetAccounts(gomock.Any(), gomock.Eq(arg)).Times(1).Return(accounts, nil)
 
-	url := fmt.Sprintf("/accounts?page_id=%v&page_size=%v", pageId, pageSize)
+	url := fmt.Sprintf("/api/v1/accounts?page_id=%v&page_size=%v", pageId, pageSize)
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 
