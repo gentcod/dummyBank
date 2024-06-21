@@ -9,6 +9,10 @@ WHERE id = $1
 RETURNING *;
 
 -- name: GetUser :one
+SELECT id, username, full_name, email, created_at FROM users
+WHERE username = $1 LIMIT 1;
+
+-- name: GetUserWithPassword :one
 SELECT * FROM users
 WHERE username = $1 LIMIT 1;
 

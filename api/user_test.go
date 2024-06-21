@@ -78,24 +78,6 @@ func TestCreateUserAPI(t *testing.T) {
 	requireBodyMatchCreaterUser(t, testServer.recorder.Body, user)
 }
 
-// func TestGetUserByIdAPI(t *testing.T) {
-// 	testServer := testServerInit(t)
-// 	user, password := randomUserAndPassword(t)
-
-// 	err := util.CheckPassword(password, user.HarshedPassword)
-// 	require.NoError(t, err)
-
-// 	testServer.mockStore.EXPECT().GetUserById(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
-
-// 	url := fmt.Sprintf("/users/%v", user.ID.String())
-// 	request, err := http.NewRequest(http.MethodGet, url, nil)
-// 	require.NoError(t, err)
-
-// 	testServer.server.router.ServeHTTP(testServer.recorder, request)
-// 	require.Equal(t, testServer.recorder.Code, http.StatusOK)
-// 	requireBodyMatchUser(t, testServer.recorder.Body, user)
-// }
-
 //randomUserAndPassword generates a random account
 func randomUserAndPassword(t *testing.T) (user db.User, password string) {
 	password = util.RandomStr(9)
