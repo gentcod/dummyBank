@@ -20,22 +20,6 @@ type Server struct {
 	router *gin.Engine
 }
 
-//Pagination is used for setting limit and offset for api request to the database
-type pagination struct {
-	PageId int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=1,max=10"`
-}
-
-//GetEntityByIdRequest is used to set binding request for uri using uuid 
-type getEntityByIdUUIDRequest struct {
-	Id string `uri:"id" binding:"required,uuid"`
-}
-
-//GetEntityByIdRequest is used to set binding request for uri using uuid 
-type getEntityByIdRequest struct {
-	Id int64 `uri:"id" binding:"required,min=1"`
-}
-
 //NewServer creates a new HTTP server amd setup routing
 func NewServer(config util.Config, store db.Store) (*Server, error) {
 	tokenGenerator, err := token.NewPasetoGenerator(config.SymmetricKey)
@@ -49,6 +33,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		tokenGenerator: tokenGenerator,
 	}
 
+	// Attach custom request validators
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
 	}
@@ -61,20 +46,23 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 
-	router.POST("/users", server.createUser)	
-	router.POST("/users/login", server.loginUser)
-	router.PATCH("/users", server.updateUser)
+	v1Routes := router.Group("/api/v1")
 
-	authRoutes := router.Group("/").Use((authMiddleware(server.tokenGenerator)))
+	v1Routes.POST("/user/signup", server.createUser)	
+	v1Routes.POST("/user/login", server.loginUser)
+	v1Routes.PATCH("/user/update", server.updateUser)
+	v1Routes.POST("/user/session/refresh", server.refreshSession)
 
-	authRoutes.POST("/accounts", server.createAccount)
-	authRoutes.PATCH("accounts", server.updateAccount)
-	authRoutes.GET("/accounts", server.getAccounts)
-	authRoutes.GET("/accounts/:id", server.getAccountById)
+	authRoutes := v1Routes.Group("/").Use((authMiddleware(server.tokenGenerator)))
 
-	authRoutes.POST("/transfers", server.createTransferTx)
-	authRoutes.GET("/transfers", server.getTransfers)
-	authRoutes.GET("/transfers/:id", server.getTransferById)
+	authRoutes.POST("/account", server.createAccount)
+	authRoutes.PATCH("account", server.updateAccount)
+	authRoutes.GET("/account", server.getAccounts)
+	authRoutes.GET("/account/:id", server.getAccountById)
+
+	authRoutes.POST("/transfer", server.createTransferTx)
+	authRoutes.GET("/transfer", server.getTransfers)
+	authRoutes.GET("/transfer/:id", server.getTransferById)
 
 	server.router = router
 }
@@ -82,6 +70,13 @@ func (server *Server) setupRouter() {
 // Start runs HTTP server on a specific address
 func (server *Server) Start(address string) error {
 	return server.router.Run(address)
+}
+
+func apiErrorResponse(message string) gin.H {
+	return gin.H{
+		"status": "error",
+		"message": message,
+	}
 }
 
 func errorResponse(err error) gin.H {

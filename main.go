@@ -25,7 +25,6 @@ func main() {
 		log.Fatal("Couldn't connect to db:", err)
 	}
 
-	//run db migrations
 	runDBMigration(config.MigrationUrl, config.DBUrl)
 
 	store := db.NewStore(conn)
@@ -40,6 +39,7 @@ func main() {
 	}
 }
 
+// runDBMigration runs DB migrations when building docker images
 func runDBMigration(migrationURL string, dbURL string) {
 	migration, err := migrate.New(migrationURL, dbURL)
 	if err != nil {

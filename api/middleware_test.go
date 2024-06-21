@@ -14,8 +14,9 @@ import (
 )
 
 func addAuthorization(t *testing.T, request *http.Request, tokenGenerator token.Generator, authorizationType string, username string, duration time.Duration) {
-	token, err := tokenGenerator.CreateToken(username, uuid.New(), duration)
+	token, payload, err := tokenGenerator.CreateToken(username, uuid.New(), duration)
 	require.NoError(t, err)
+	require.NotEmpty(t, payload)
 
 	authorizationHeader := fmt.Sprintf("%v %v", authorizationType, token)
 	request.Header.Set(authorizationHeaderKey, authorizationHeader)
@@ -81,7 +82,7 @@ func TestAuthMiddleware(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testServer := testServerInit(t)
 
-			authPath := "/auth"
+			authPath := "/api/v1/auth"
 			testServer.server.router.GET(authPath, authMiddleware(testServer.server.tokenGenerator), func(ctx *gin.Context) {
 				ctx.JSON(http.StatusOK, gin.H{})
 			})

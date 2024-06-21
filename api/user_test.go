@@ -69,7 +69,7 @@ func TestCreateUserAPI(t *testing.T) {
 	require.NoError(t, err)
 
 	testServer.mockStore.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user, nil)
-	url := "/users"
+	url := "/api/v1/user/signup"
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 
@@ -77,24 +77,6 @@ func TestCreateUserAPI(t *testing.T) {
 	require.Equal(t, testServer.recorder.Code, http.StatusOK)
 	requireBodyMatchCreaterUser(t, testServer.recorder.Body, user)
 }
-
-// func TestGetUserByIdAPI(t *testing.T) {
-// 	testServer := testServerInit(t)
-// 	user, password := randomUserAndPassword(t)
-
-// 	err := util.CheckPassword(password, user.HarshedPassword)
-// 	require.NoError(t, err)
-
-// 	testServer.mockStore.EXPECT().GetUserById(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
-
-// 	url := fmt.Sprintf("/users/%v", user.ID.String())
-// 	request, err := http.NewRequest(http.MethodGet, url, nil)
-// 	require.NoError(t, err)
-
-// 	testServer.server.router.ServeHTTP(testServer.recorder, request)
-// 	require.Equal(t, testServer.recorder.Code, http.StatusOK)
-// 	requireBodyMatchUser(t, testServer.recorder.Body, user)
-// }
 
 //randomUserAndPassword generates a random account
 func randomUserAndPassword(t *testing.T) (user db.User, password string) {

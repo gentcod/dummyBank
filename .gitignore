@@ -1,8 +1,8 @@
 #Environmental variables
-dev.env
+*.env
 
 #Executable files
 *.exe
 
 .vscode
-*docker-compose.yaml
+docker-compose*.yaml
