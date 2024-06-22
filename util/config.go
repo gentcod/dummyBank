@@ -13,6 +13,7 @@ type Config struct {
 	DBUrl string `mapstructure:"DB_URL"`
 	MigrationUrl string `mapstructure:"MIGRATION_URL"`
 	Port string `mapstructure:"PORT_ADDRESS"`
+	GrpcPort string `mapstructure:"GRPC_ADDRESS"`
 	SymmetricKey string `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	SecretKey string `mapstructure:"TOKEN_SECRET_KEY"`
 	TokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
