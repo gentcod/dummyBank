@@ -9,7 +9,7 @@ import (
 	"github.com/gentcod/DummyBank/util"
 )
 
-//Server serves HTTP requests for our banking service.
+//Server serves gRPC requests for our banking service.
 type Server struct {
 	pb.UnimplementedDummyBankServer
 	config util.Config
