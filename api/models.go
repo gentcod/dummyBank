@@ -31,7 +31,7 @@ type UserAccount struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-//
+//UserProfile contains the details of 
 type UserProfile struct {
 	Username        string    `json:"username" binding:"required,alphanum"`
 	FullName          string    `json:"full_name"`
