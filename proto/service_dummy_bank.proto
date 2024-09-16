@@ -5,19 +5,40 @@ package pb;
 import "google/api/annotations.proto";
 import "rpc_create_user.proto";
 import "rpc_login_user.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/gentcod/DummyBank/pb";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+   info: {
+      title: "Dummy Bank";
+      version: "1.0";
+      contact: {
+      name: "Oyefule Oluwatayo";
+      url: "https://github.com/gentcod/dummyBank";
+      email: "oyefuleoluwatayo@gmail.com";
+      };
+      // license: {
+      // name: "BSD 3-Clause License";
+      // url: "https://github.com/grpc-ecosystem/grpc-gateway/blob/main/LICENSE";
+      // };
+      // extensions: {
+      // key: "x-something-something";
+      // value {string_value: "yadda"}
+      // }
+   };
+};
 
 service DummyBank {
    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
       option (google.api.http) = {
-         post: "/api/v1/create_user"
+         post: "/api/v1/user/signup"
          body: "*"
       };
    }
    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
       option (google.api.http) = {
-         post: "/api/v1/login_user"
+         post: "/api/v1/user/login"
          body: "*"
       };
    }

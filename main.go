@@ -95,7 +95,6 @@ func runGatewayServer(config util.Config, store db.Store) {
 	})
 
 	grpcMux := runtime.NewServeMux(jsonOption)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -106,6 +105,9 @@ func runGatewayServer(config util.Config, store db.Store) {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
+
+	fs := http.FileServer(http.Dir("./doc/swagger"))
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
 
 	listener, err := net.Listen("tcp", config.Port)
 	if err != nil {
