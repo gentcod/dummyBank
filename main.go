@@ -24,7 +24,7 @@ import (
 )
 
 func main() {
-	config, err := util.LoadConfig(".")
+	config, err := util.LoadConfig("./test.env")
 	if err != nil {
 		log.Fatal("cannot load config", err)
 	}
@@ -49,7 +49,7 @@ func runGinServer(config util.Config, store db.Store) {
 		log.Fatal("Couldn't initialize the server:", err)
 	}
 
-	err = server.Start(config.Port)
+	err = server.Start(config.PortAddress)
 	if err != nil {
 		log.Fatal("Couldn't start up server:", err)
 	}
@@ -66,7 +66,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 	pb.RegisterDummyBankServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
-	listener, err := net.Listen("tcp", config.GrpcPort)
+	listener, err := net.Listen("tcp", config.GrpcAddress)
 	if err != nil {
 		log.Fatal("Couldn't create listener:", err)
 	}
@@ -109,7 +109,7 @@ func runGatewayServer(config util.Config, store db.Store) {
 	fs := http.FileServer(http.Dir("./doc/swagger"))
 	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
 
-	listener, err := net.Listen("tcp", config.Port)
+	listener, err := net.Listen("tcp", config.PortAddress)
 	if err != nil {
 		log.Fatal("Couldn't create listener:", err)
 	}

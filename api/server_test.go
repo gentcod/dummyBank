@@ -28,8 +28,8 @@ func testServerInit(t *testing.T) (testServer TestServer) {
 	testServer.mockStore = mockdb.NewMockStore(ctrl)
 
 	config := util.Config{
-		SymmetricKey: util.RandomStr(32),
-		TokenDuration: time.Minute,
+		TokenSymmetricKey: util.RandomStr(32),
+		AccessTokenDuration: time.Minute,
 	}
 
 	//Start test server and send requests

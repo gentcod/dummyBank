@@ -19,7 +19,7 @@ type Server struct {
 
 //NewServer creates a new gRPC server.
 func NewServer(config util.Config, store db.Store) (*Server, error) {
-	tokenGenerator, err := token.NewPasetoGenerator(config.SymmetricKey)
+	tokenGenerator, err := token.NewPasetoGenerator(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot initialize token generator: %v", err)
 	}
