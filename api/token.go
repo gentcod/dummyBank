@@ -77,7 +77,7 @@ func (server *Server) refreshSession(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, accessPayload, err := server.tokenGenerator.CreateToken(refreshPayload.Username, user.ID, server.config.TokenDuration)
+	accessToken, accessPayload, err := server.tokenGenerator.CreateToken(refreshPayload.Username, user.ID, server.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
