@@ -21,8 +21,78 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/account/create": {
+      "post": {
+        "summary": "Create Account",
+        "description": "Use this endpoint to create an account based on specified currency",
+        "operationId": "DummyBank_CreateAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateAccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateAccountRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DummyBank"
+        ]
+      }
+    },
+    "/api/v1/account/update": {
+      "post": {
+        "summary": "Update Account",
+        "description": "Use this endpoint to update an account balance based on specified currency",
+        "operationId": "DummyBank_UpdateAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbUpdateAccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbUpdateAccountRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DummyBank"
+        ]
+      }
+    },
     "/api/v1/user/login": {
       "post": {
+        "summary": "Login User",
+        "description": "Use this endpoint to authenticate a user",
         "operationId": "DummyBank_LoginUser",
         "responses": {
           "200": {
@@ -55,6 +125,8 @@
     },
     "/api/v1/user/signup": {
       "post": {
+        "summary": "Create mew User",
+        "description": "Use this endpoint to create a user account",
         "operationId": "DummyBank_CreateUser",
         "responses": {
           "200": {
@@ -87,6 +159,44 @@
     }
   },
   "definitions": {
+    "pbAccount": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbCreateAccountRequest": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string"
+        }
+      }
+    },
+    "pbCreateAccountResponse": {
+      "type": "object",
+      "properties": {
+        "userAccount": {
+          "$ref": "#/definitions/pbAccount"
+        }
+      }
+    },
     "pbCreateUserRequest": {
       "type": "object",
       "properties": {
@@ -145,6 +255,26 @@
         "refreshTokenExpiredAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "pbUpdateAccountRequest": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbUpdateAccountResponse": {
+      "type": "object",
+      "properties": {
+        "userAccount": {
+          "$ref": "#/definitions/pbAccount"
         }
       }
     },
