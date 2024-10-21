@@ -3,8 +3,10 @@ syntax = "proto3";
 package pb;
 
 import "google/api/annotations.proto";
-import "rpc_create_user.proto";
-import "rpc_login_user.proto";
+import "rpc_user.proto";
+// import "rpc_create_user.proto";
+// import "rpc_login_user.proto";
+import "rpc_account.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/gentcod/DummyBank/pb";
@@ -35,11 +37,40 @@ service DummyBank {
          post: "/api/v1/user/signup"
          body: "*"
       };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+         description: "Use this endpoint to create a user account"
+         summary: "Create mew User"
+      };
    }
    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
       option (google.api.http) = {
          post: "/api/v1/user/login"
          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+         description: "Use this endpoint to authenticate a user"
+         summary: "Login User"
+      };
+   }
+
+   rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {
+      option (google.api.http) = {
+         post: "/api/v1/account/create"
+         body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+         description: "Use this endpoint to create an account based on specified currency"
+         summary: "Create Account"
+      };
+   }
+   rpc UpdateAccount (UpdateAccountRequest) returns (UpdateAccountResponse) {
+      option (google.api.http) = {
+         post: "/api/v1/account/update"
+         body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+         description: "Use this endpoint to update an account balance based on specified currency"
+         summary: "Update Account"
       };
    }
 }

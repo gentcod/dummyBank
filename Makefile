@@ -43,8 +43,6 @@ proto:
 	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
 	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=dummy_bank \
 	proto/*.proto
-
-evans:
-	evans --host localhost --port 3000 -r repl
+	statik -src=./doc/swagger -dest=./doc
 
 .PHONY: sqlc mysql postgres createdb dropdb gooseup goosedown test mock migrateCreate buildimage postgresBash proto

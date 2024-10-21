@@ -17,6 +17,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
+	"github.com/rakyll/statik/fs"
+	_ "github.com/gentcod/DummyBank/doc/statik"
 
 	// "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -24,7 +26,7 @@ import (
 )
 
 func main() {
-	config, err := util.LoadConfig(".")
+	config, err := util.LoadConfig("./app.env")
 	if err != nil {
 		log.Fatal("cannot load config", err)
 	}
@@ -37,9 +39,9 @@ func main() {
 	// runDBMigration(config.MigrationUrl, config.DBUrl)
 
 	store := db.NewStore(conn)
-	// runGinServer(config, store)
-	go runGatewayServer(config, store)
-	runGrpcServer(config, store)
+	runGinServer(config, store)
+	// go runGatewayServer(config, store)
+	// runGrpcServer(config, store)
 }
 
 // runGinServer initializes HTTP server.
@@ -49,7 +51,7 @@ func runGinServer(config util.Config, store db.Store) {
 		log.Fatal("Couldn't initialize the server:", err)
 	}
 
-	err = server.Start(config.Port)
+	err = server.Start(config.PortAddress)
 	if err != nil {
 		log.Fatal("Couldn't start up server:", err)
 	}
@@ -66,7 +68,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 	pb.RegisterDummyBankServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
-	listener, err := net.Listen("tcp", config.GrpcPort)
+	listener, err := net.Listen("tcp", config.GrpcAddress)
 	if err != nil {
 		log.Fatal("Couldn't create listener:", err)
 	}
@@ -106,10 +108,15 @@ func runGatewayServer(config util.Config, store db.Store) {
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
 
-	fs := http.FileServer(http.Dir("./doc/swagger"))
-	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
+	statikFS, err := fs.New()
+	if err != nil {
+		log.Fatal("cannot create statik fs")
+	}
 
-	listener, err := net.Listen("tcp", config.Port)
+	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
+	mux.Handle("/swagger/", swaggerHandler)
+
+	listener, err := net.Listen("tcp", config.PortAddress)
 	if err != nil {
 		log.Fatal("Couldn't create listener:", err)
 	}

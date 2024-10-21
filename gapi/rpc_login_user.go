@@ -26,7 +26,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		return nil, status.Errorf(codes.Unauthenticated, "user authentication error: %v", err)
 	}
 
-	accessToken, accessPayload, err := server.tokenGenerator.CreateToken(user.Username, user.ID, server.config.TokenDuration)
+	accessToken, accessPayload, err := server.tokenGenerator.CreateToken(user.Username, user.ID, server.config.AccessTokenDuration)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create access token: %v", err)
 	}
