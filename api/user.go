@@ -89,8 +89,14 @@ func(server *Server) updateUser(ctx *gin.Context) {
 
 	arg := db.UpdateUserParams{
 		ID: user.ID,
-		HarshedPassword: hashedNewPassword,
-		PasswordChangedAt: time.Now().UTC(),
+		HarshedPassword: sql.NullString{
+			String: hashedNewPassword,
+			Valid: true,
+		},
+		PasswordChangedAt: sql.NullTime{
+			Time: time.Now().UTC(),
+			Valid: true,
+		},
 	}
 
 	updatedUser, err := server.store.UpdateUser(ctx, arg)

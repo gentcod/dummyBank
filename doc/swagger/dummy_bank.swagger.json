@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Dummy Bank",
-    "version": "1.0",
+    "version": "1.1",
     "contact": {
       "name": "Oyefule Oluwatayo",
       "url": "https://github.com/gentcod/dummyBank",
@@ -125,7 +125,7 @@
     },
     "/api/v1/user/signup": {
       "post": {
-        "summary": "Create mew User",
+        "summary": "Create new User",
         "description": "Use this endpoint to create a user account",
         "operationId": "DummyBank_CreateUser",
         "responses": {
@@ -149,6 +149,40 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/pbCreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DummyBank"
+        ]
+      }
+    },
+    "/api/v1/user/update": {
+      "patch": {
+        "summary": "Update existing User",
+        "description": "Use this endpoint to update a user account",
+        "operationId": "DummyBank_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbUpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbUpdateUserRequest"
             }
           }
         ],
@@ -275,6 +309,31 @@
       "properties": {
         "userAccount": {
           "$ref": "#/definitions/pbAccount"
+        }
+      }
+    },
+    "pbUpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "pbUpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/pbUser"
         }
       }
     },

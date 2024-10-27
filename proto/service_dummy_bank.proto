@@ -4,8 +4,6 @@ package pb;
 
 import "google/api/annotations.proto";
 import "rpc_user.proto";
-// import "rpc_create_user.proto";
-// import "rpc_login_user.proto";
 import "rpc_account.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -14,7 +12,7 @@ option go_package = "github.com/gentcod/DummyBank/pb";
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
    info: {
       title: "Dummy Bank";
-      version: "1.0";
+      version: "1.1";
       contact: {
       name: "Oyefule Oluwatayo";
       url: "https://github.com/gentcod/dummyBank";
@@ -39,7 +37,17 @@ service DummyBank {
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
          description: "Use this endpoint to create a user account"
-         summary: "Create mew User"
+         summary: "Create new User"
+      };
+   }
+   rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
+      option (google.api.http) = {
+         patch: "/api/v1/user/update"
+         body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+         description: "Use this endpoint to update a user account"
+         summary: "Update existing User"
       };
    }
    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {

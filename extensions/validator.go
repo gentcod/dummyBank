@@ -4,18 +4,31 @@ import (
 	"fmt"
 	"net/mail"
 	"regexp"
+
+	"github.com/google/uuid"
 )
 
 var (
 	isValidStrComb = regexp.MustCompile(`^[a-z0-9_]+$`).MatchString
-	// isValidPassword = regexp.MustCompile(`^([*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$]+$`).MatchString
-	isValidFullname = regexp.MustCompile(`^[a-zA-Z\\S]+$`).MatchString
+	isValidPassword = regexp.MustCompile(`^[a-z0-9_!@#$&+=]+$`).MatchString
+	isValidFullname = regexp.MustCompile(`^[a-zA-Z\S]+$`).MatchString
+	isValidId = func (id string) error {
+		return uuid.Validate(id)
+	}
 )
 
 func ValidateString(value string, minLength int, maxLength int) error {
 	n := len(value)
 	if n < minLength || n > maxLength {
 		return fmt.Errorf("input must contain from %d-%d characters", minLength, maxLength)
+	}
+
+	return nil
+}
+
+func ValidateID(value string) error {
+	if err := isValidId(value); err != nil {
+		return err
 	}
 
 	return nil
@@ -50,10 +63,9 @@ func ValidatePassword(value string) error {
 		return err
 	}
 
-	// TODO: Write regex for password
-	// if !isValidPassword(value) {
-	// 	return fmt.Errorf("must contain only letters, digits, or underscore")
-	// }
+	if !isValidPassword(value) {
+		return fmt.Errorf("must contain only letters, digits, and any of the following characters; _!@#$&+=")
+	}
 
 	return nil
 }
