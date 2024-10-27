@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -103,19 +104,32 @@ func (q *Queries) GetUserWithPassword(ctx context.Context, username string) (Use
 }
 
 const updateUser = `-- name: UpdateUser :one
-UPDATE users SET harshed_password = $2, password_changed_at = $3
-WHERE id = $1
+UPDATE users 
+SET 
+   harshed_password = COALESCE($1, harshed_password), 
+   full_name = COALESCE($2, full_name), 
+   email = COALESCE($3, email),
+   password_changed_at = COALESCE($4, password_changed_at)
+WHERE id = $5
 RETURNING id, username, harshed_password, full_name, email, password_changed_at, created_at
 `
 
 type UpdateUserParams struct {
-	ID                uuid.UUID `json:"id"`
-	HarshedPassword   string    `json:"harshed_password"`
-	PasswordChangedAt time.Time `json:"password_changed_at"`
+	HarshedPassword   sql.NullString `json:"harshed_password"`
+	FullName          sql.NullString `json:"full_name"`
+	Email             sql.NullString `json:"email"`
+	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
+	ID                uuid.UUID      `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUser, arg.ID, arg.HarshedPassword, arg.PasswordChangedAt)
+	row := q.db.QueryRowContext(ctx, updateUser,
+		arg.HarshedPassword,
+		arg.FullName,
+		arg.Email,
+		arg.PasswordChangedAt,
+		arg.ID,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,

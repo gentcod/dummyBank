@@ -4,8 +4,13 @@ VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: UpdateUser :one
-UPDATE users SET harshed_password = $2, password_changed_at = $3
-WHERE id = $1
+UPDATE users 
+SET 
+   harshed_password = COALESCE(sqlc.narg(harshed_password), harshed_password), 
+   full_name = COALESCE(sqlc.narg(full_name), full_name), 
+   email = COALESCE(sqlc.narg(email), email),
+   password_changed_at = COALESCE(sqlc.narg(password_changed_at), password_changed_at)
+WHERE id = sqlc.arg(id)
 RETURNING *;
 
 -- name: GetUser :one

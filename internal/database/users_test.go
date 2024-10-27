@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	// "database/sql"
 	"testing"
 	"time"
@@ -44,27 +45,33 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
-	user1 := createRandomUser(t)
-	hashedPassword, err := util.HashPassword(user1.HarshedPassword)
+	ranUser := createRandomUser(t)
+	hashedPassword, err := util.HashPassword(ranUser.HarshedPassword)
 	require.NoError(t, err)
 
 	arg := UpdateUserParams{
-		ID: user1.ID,
-		HarshedPassword: hashedPassword,
-		PasswordChangedAt: time.Now(),
+		ID: ranUser.ID,
+		HarshedPassword: sql.NullString{
+			String: hashedPassword,
+			Valid: true,
+		},
+		PasswordChangedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
 	}
 
-	user2, err := testQueries.UpdateUser(context.Background(), arg)
+	updatedUser, err := testQueries.UpdateUser(context.Background(), arg)
 	require.NoError(t, err)
-	require.NotEmpty(t, user2)
+	require.NotEmpty(t, updatedUser)
 
-	require.Equal(t, user1.ID, user2.ID)
-	require.Equal(t, user1.FullName, user2.FullName)
-	require.Equal(t, user1.Email, user2.Email)
-	require.Equal(t, arg.HarshedPassword, user2.HarshedPassword)
+	require.Equal(t, ranUser.ID, updatedUser.ID)
+	require.Equal(t, ranUser.FullName, updatedUser.FullName)
+	require.Equal(t, ranUser.Email, updatedUser.Email)
+	require.Equal(t, arg.HarshedPassword.String, updatedUser.HarshedPassword)
 
-	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
-	require.WithinDuration(t, arg.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
+	require.WithinDuration(t, ranUser.CreatedAt, updatedUser.CreatedAt, time.Second)
+	require.WithinDuration(t, arg.PasswordChangedAt.Time, updatedUser.PasswordChangedAt, time.Second)
 }
 
 // func TestGetUserById(t *testing.T) {
