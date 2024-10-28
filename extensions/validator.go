@@ -10,8 +10,9 @@ import (
 
 var (
 	isValidStrComb = regexp.MustCompile(`^[a-z0-9_]+$`).MatchString
+	// TODO: resolve passw0rd regex
 	isValidPassword = regexp.MustCompile(`^[a-z0-9_!@#$&+=]+$`).MatchString
-	isValidFullname = regexp.MustCompile(`^[a-zA-Z\S]+$`).MatchString
+	isValidFullname = regexp.MustCompile(`^[a-zA-Z\s]+$`).MatchString
 	isValidId = func (id string) error {
 		return uuid.Validate(id)
 	}

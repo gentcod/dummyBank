@@ -24,3 +24,7 @@ func valiateParameters(violations []*errdetails.BadRequest_FieldViolation) error
 
 	return statusDetails.Err()
 }
+
+func unauthenticatedError(err error) error {
+	return status.Errorf(codes.Unauthenticated, "cannot perform this action, please login: %v", err)
+}
