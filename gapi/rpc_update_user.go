@@ -9,20 +9,30 @@ import (
 	db "github.com/gentcod/DummyBank/internal/database"
 	"github.com/gentcod/DummyBank/pb"
 	"github.com/gentcod/DummyBank/util"
-	"github.com/google/uuid"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	// "github.com/google/uuid"
 )
 
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	payload, err := server.authorizeUser(ctx)
+	if err != nil {
+		return nil, unauthenticatedError(err)
+	}
+	
 	violations := validateUpdateUserRequest(req)
 	if violations != nil {
 		return nil, valiateParameters(violations)
 	}
 
+	// TODO: Implement Auth for validating user, using mailed passkey
+	// if payload.UserID != uuid.MustParse(req.GetId()) {
+	// 	return nil, status.Errorf(codes.PermissionDenied, "cannot perform this action")
+	// }
+
 	arg := db.UpdateUserParams{
-		ID: uuid.MustParse(req.GetId()),
+		ID: payload.UserID,
 		FullName: sql.NullString{
 			String: req.GetFullName(),
 			Valid:  req.FullName != nil,
