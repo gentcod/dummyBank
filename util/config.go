@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Environment string
 	PortAddress string
 	GrpcAddress string
 	DBDriver string
