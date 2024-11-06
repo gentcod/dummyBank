@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -16,6 +17,7 @@ import (
 	db "github.com/gentcod/DummyBank/internal/database"
 	"github.com/gentcod/DummyBank/pb"
 	"github.com/gentcod/DummyBank/util"
+	"github.com/gentcod/DummyBank/worker"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
 	"github.com/rakyll/statik/fs"
@@ -46,13 +48,21 @@ func main() {
 	// runDBMigration(config.MigrationUrl, config.DBUrl)
 
 	store := db.NewStore(conn)
+
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+
 	// runGinServer(config, store)
-	go runGatewayServer(config, store)
-	runGrpcServer(config, store)
+	go runTaskProcessor(redisOpt, store)
+	go runGatewayServer(config, store, taskDistributor)
+	runGrpcServer(config, store, taskDistributor)
 }
 
 // runGinServer initializes HTTP server.
-func runGinServer(config util.Config, store db.Store) {
+func runGinServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
 	server, err := api.NewServer(config, store)
 	if err != nil {
 		log.Error().AnErr("Couldn't initialize the server:", err)
@@ -65,8 +75,8 @@ func runGinServer(config util.Config, store db.Store) {
 }
 
 // runGrpcServer initializes gRPC server.
-func runGrpcServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+func runGrpcServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Error().AnErr("Couldn't initialize the server:", err)
 	}
@@ -89,8 +99,8 @@ func runGrpcServer(config util.Config, store db.Store) {
 }
 
 // runGatewayServer initializes gRPC HTTP gateway server.
-func runGatewayServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+func runGatewayServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Error().AnErr("Couldn't initialize the server:", err)
 	}
@@ -134,6 +144,15 @@ func runGatewayServer(config util.Config, store db.Store) {
 	err = http.Serve(listener, handler)
 	if err != nil {
 		log.Error().AnErr("Couldn't start gRPC gateway server:", err)
+	}
+}
+
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+	log.Info().Msg("start task processor")
+	err := taskProcessor.Start()
+	if err != nil {
+		log.Fatal().AnErr("failed to start task processor:", err)
 	}
 }
 

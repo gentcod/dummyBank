@@ -17,6 +17,7 @@ type Config struct {
 	AccessTokenDuration time.Duration
 	RefreshTokenDuration time.Duration
 	MigrationUrl string
+	RedisAddress string
 }
 
 func LoadConfig(path string) (config Config, err error) {

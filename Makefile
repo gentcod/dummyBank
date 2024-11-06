@@ -45,4 +45,7 @@ proto:
 	proto/*.proto
 	statik -src=./doc/swagger -dest=./doc
 
-.PHONY: sqlc mysql postgres createdb dropdb gooseup goosedown test mock migrateCreate buildimage postgresBash proto
+redis:
+	docker run --name redis -p 6379:6379 -d redis:7.4-alpine
+
+.PHONY: sqlc mysql postgres createdb dropdb gooseup goosedown test mock migrateCreate buildimage postgresBash proto redis
