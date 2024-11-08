@@ -2,7 +2,7 @@ package worker
 
 import (
 	"context"
-	"database/sql"
+	// "database/sql"
 	"encoding/json"
 	"fmt"
 
@@ -44,14 +44,14 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(
 ) error {
 	var payload PayloadSendVerifyEmail
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
-		return fmt.Errorf("failed to unmarshal task payload: %w", err)
+		return fmt.Errorf("failed to unmarshal task payload: %w", asynq.SkipRetry)
 	}
 
 	user, err := processor.store.GetUser(ctx, payload.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("user does not exists: %w", err)
-		}
+		// if err == sql.ErrNoRows {
+		// 	return fmt.Errorf("user does not exists: %w", asynq.SkipRetry)
+		// }
 		return fmt.Errorf("failed to get user: %w", err)
 	}
 

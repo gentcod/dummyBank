@@ -5,6 +5,8 @@ import (
 
 	db "github.com/gentcod/DummyBank/internal/database"
 	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog/log"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -23,6 +25,9 @@ type RedisTaskProcessor struct {
 }
 
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcessor {
+	logger := NewLogger()
+	redis.SetLogger(logger)
+	
 	server := asynq.NewServer(
 		redisOpt,
 		asynq.Config{
@@ -30,6 +35,10 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskPr
 				QueueCritical: 10,
 				QueueDefault: 5,
 			},
+			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
+				log.Error().AnErr("failed to process task:", err).Bytes("payload", task.Payload())
+			}),
+			Logger: logger,
 		},
 	)
 
