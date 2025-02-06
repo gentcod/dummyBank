@@ -17,62 +17,84 @@ import (
 //TODO: Implement password confirmation when updating account and password auth for getting account
 
 type createUserRequest struct {
-	Username        string    `json:"username" binding:"required,alphanum"`
-	FullName        string    `json:"full_name" binding:"required"`
-	Email           string    `json:"email" binding:"required,email"`
-	Password string    `json:"password" binding:"required,min=8"`
+	Username string `json:"username" binding:"required,alphanum"`
+	FullName string `json:"full_name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusBadRequest,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
 	hashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusInternalServerError,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
 	arg := db.CreateUserParams{
-		ID: uuid.New(),
-		Username: req.Username,
-		FullName: req.FullName,
-		Email: req.Email,
+		ID:              uuid.New(),
+		Username:        req.Username,
+		FullName:        req.FullName,
+		Email:           req.Email,
 		HarshedPassword: hashedPassword,
 	}
 
 	user, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name(){
+			switch pqErr.Code.Name() {
 			case "unique_violation":
-				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				ctx.JSON(http.StatusForbidden, handlerResponse(ApiResponse[error]{
+					statusCode: http.StatusForbidden,
+					message:    err.Error(),
+					data:       nil,
+				}))
 				return
 			}
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusInternalServerError,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
 	userProfile := getUserProfile(user)
-
-	ctx.JSON(http.StatusOK, userProfile)
+	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[UserProfile]{
+		statusCode: http.StatusOK,
+		message:    "user has been created successfully",
+		data:       userProfile,
+	}))
 }
-
 
 type updateUserRequest struct {
-	Username   string `json:"username" binding:"required,alphanum"`
-	Password   string    `json:"password" binding:"required"`
-	NewPassword   string    `json:"new_password" binding:"required"`
+	Username    string `json:"username" binding:"required,alphanum"`
+	Password    string `json:"password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
 }
 
-func(server *Server) updateUser(ctx *gin.Context) {
+func (server *Server) updateUser(ctx *gin.Context) {
 	var req updateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusBadRequest,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
@@ -83,7 +105,11 @@ func(server *Server) updateUser(ctx *gin.Context) {
 
 	hashedNewPassword, err := util.HashPassword(req.NewPassword)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusInternalServerError,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
@@ -91,43 +117,56 @@ func(server *Server) updateUser(ctx *gin.Context) {
 		ID: user.ID,
 		HarshedPassword: sql.NullString{
 			String: hashedNewPassword,
-			Valid: true,
+			Valid:  true,
 		},
 		PasswordChangedAt: sql.NullTime{
-			Time: time.Now().UTC(),
+			Time:  time.Now().UTC(),
 			Valid: true,
 		},
 	}
 
 	updatedUser, err := server.store.UpdateUser(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusInternalServerError,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, updatedUser)
+	userProfile := getUserProfile(updatedUser)
+	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[UserProfile]{
+		statusCode: http.StatusOK,
+		message:    "user has been updated successfully",
+		data:       userProfile,
+	}))
 }
 
 //TODO: Implement multiple login methods; username or password
 
 type loginUserRequest struct {
-	Username        string    `json:"username" binding:"required,alphanum"`
-	Password string    `json:"password" binding:"required,min=8"`
+	Username string `json:"username" binding:"required,alphanum"`
+	Password string `json:"password" binding:"required,min=8"`
 }
 
 type loginUserResponse struct {
-	SessionID uuid.UUID `json:"session_id"`
-	AccessToken string `json:"access_token"`
-	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
-	RefreshToken string `json:"refresh_token"`
-	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
-	User UserProfile `json:"user"`
+	SessionID             uuid.UUID   `json:"session_id"`
+	AccessToken           string      `json:"access_token"`
+	AccessTokenExpiresAt  time.Time   `json:"access_token_expires_at"`
+	RefreshToken          string      `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time   `json:"refresh_token_expires_at"`
+	User                  UserProfile `json:"user"`
 }
 
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusBadRequest,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
@@ -138,59 +177,85 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	accessToken, accessPayload, err := server.tokenGenerator.CreateToken(user.Username, user.ID, server.config.AccessTokenDuration)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusInternalServerError,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
 	refreshToken, refreshPayload, err := server.tokenGenerator.CreateToken(user.Username, user.ID, server.config.RefreshTokenDuration)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusInternalServerError,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
 	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
-		ID: refreshPayload.ID,
-		Username: user.Username,
+		ID:           refreshPayload.ID,
+		Username:     user.Username,
 		RefreshToken: refreshToken,
-		UserAgent: ctx.Request.UserAgent(),
-		ClientIp: ctx.ClientIP(),
-		IsBlocked: false,
-		ExpiresAt: refreshPayload.ExpiredAt,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusInternalServerError,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return
 	}
 
 	userProfile := getUserProfile(user)
-
 	resp := loginUserResponse{
-		SessionID: session.ID,
-		AccessToken: accessToken,
-		AccessTokenExpiresAt: accessPayload.ExpiredAt,
-		RefreshToken: refreshToken,
+		SessionID:             session.ID,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
 		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
-		User: userProfile,
+		User:                  userProfile,
 	}
 
-	ctx.JSON(http.StatusOK, resp)
+	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[loginUserResponse]{
+		statusCode: http.StatusOK,
+		message:    "logged in successfully",
+		data:       resp,
+	}))
 }
 
 func (server *Server) validateUser(ctx *gin.Context, username string, password string) (db.User, bool) {
 	user, err := server.store.GetUserWithPassword(ctx, username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			message := "User not found"
-			ctx.JSON(http.StatusNotFound, apiErrorResponse(message))
+			ctx.JSON(http.StatusNotFound, handlerResponse(ApiResponse[error]{
+				statusCode: http.StatusNotFound,
+				message:    "User not found",
+				data:       nil,
+			}))
 			return user, false
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusInternalServerError,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return user, false
 	}
-	
+
 	err = util.CheckPassword(password, user.HarshedPassword)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		ctx.JSON(http.StatusUnauthorized, handlerResponse(ApiResponse[error]{
+			statusCode: http.StatusUnauthorized,
+			message:    err.Error(),
+			data:       nil,
+		}))
 		return user, false
 	}
 
@@ -199,9 +264,9 @@ func (server *Server) validateUser(ctx *gin.Context, username string, password s
 
 func getUserProfile(user db.User) UserProfile {
 	return UserProfile{
-		Username: user.Username,
-		FullName: user.FullName,
-		Email: user.Email,
+		Username:  user.Username,
+		FullName:  user.FullName,
+		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 	}
 }

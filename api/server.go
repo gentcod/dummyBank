@@ -12,15 +12,15 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-//Server serves HTTP requests for our banking service
+// Server serves HTTP requests for our banking service
 type Server struct {
-	config util.Config
-	store db.Store
+	config         util.Config
+	store          db.Store
 	tokenGenerator token.Generator
-	router *gin.Engine
+	router         *gin.Engine
 }
 
-//NewServer creates a new HTTP server amd setup routing
+// NewServer creates a new HTTP server amd setup routing
 func NewServer(config util.Config, store db.Store) (*Server, error) {
 	tokenGenerator, err := token.NewPasetoGenerator(config.TokenSymmetricKey)
 	if err != nil {
@@ -28,8 +28,8 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	}
 
 	server := &Server{
-		config: config,
-		store: store,
+		config:         config,
+		store:          store,
 		tokenGenerator: tokenGenerator,
 	}
 
@@ -46,23 +46,29 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 
+	router.Use(interceptor(server))
+
 	v1Routes := router.Group("/api/v1")
 
-	v1Routes.POST("/user/signup", server.createUser)	
-	v1Routes.POST("/user/login", server.loginUser)
-	v1Routes.PATCH("/user/update", server.updateUser)
-	v1Routes.POST("/user/session/refresh", server.refreshSession)
+	v1Routes.POST("/session/refresh", server.refreshSession)
+
+	v1Routes.POST("/users/signup", server.createUser)
+	v1Routes.POST("/users/login", server.loginUser)
+	v1Routes.PATCH("/users/update", server.updateUser)
 
 	authRoutes := v1Routes.Group("/").Use((authMiddleware(server.tokenGenerator)))
 
-	authRoutes.POST("/account", server.createAccount)
-	authRoutes.PATCH("account", server.updateAccount)
-	authRoutes.GET("/account", server.getAccounts)
-	authRoutes.GET("/account/:id", server.getAccountById)
+	authRoutes.POST("/accounts", server.createAccount)
+	authRoutes.PATCH("accounts", server.updateAccount)
+	authRoutes.GET("/accounts", server.getAccounts)
+	authRoutes.GET("/accounts/:id", server.getAccountById)
 
-	authRoutes.POST("/transfer", server.createTransferTx)
-	authRoutes.GET("/transfer", server.getTransfers)
+	authRoutes.POST("/transfers", server.createTransferTx)
+	authRoutes.GET("/transfers", server.getTransfers)
 	authRoutes.GET("/transfer/:id", server.getTransferById)
+
+	authRoutes.GET("/transactions", server.getEntries)
+	authRoutes.GET("/transactions/:id", server.getEntry)
 
 	server.router = router
 }
@@ -72,13 +78,42 @@ func (server *Server) Start(address string) error {
 	return server.router.Run(address)
 }
 
-func apiErrorResponse(message string) gin.H {
+type ApiResponse[T any] struct {
+	statusCode int
+	message    string
+	data       T
+}
+
+func handlerResponse[T any](resp ApiResponse[T]) gin.H {
+	if resp.statusCode < 300 {
+		return apiSuccessResponse(resp)
+	}
+
+	return apiErrorResponse(resp)
+}
+
+func apiSuccessResponse[T any](resp ApiResponse[T]) gin.H {
 	return gin.H{
-		"status": "error",
-		"message": message,
+		"status":     "success",
+		"statusCode": resp.statusCode,
+		"message":    resp.message,
+		"data":       resp.data,
 	}
 }
 
-func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
+func apiErrorResponse[T any](resp ApiResponse[T]) gin.H {
+	return gin.H{
+		"status":     "error",
+		"statusCode": resp.statusCode,
+		"message":    resp.message,
+		"data":       resp.data,
+	}
+}
+
+func handleInternalResponse(resp ApiResponse[any]) gin.H {
+	return gin.H{
+		"status":     "error",
+		"statusCode": resp.statusCode,
+		"message":    "An unexpected error occured",
+	}
 }
