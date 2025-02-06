@@ -49,6 +49,7 @@ func TestCreateUserAPI(t *testing.T) {
 	testServer := testServerInit(t)
 
 	user, password := randomUserAndPassword(t)
+	userProfile := getUserProfile(user)
 
 	requestBody := gin.H{
 		"username": user.Username,
@@ -69,13 +70,13 @@ func TestCreateUserAPI(t *testing.T) {
 	require.NoError(t, err)
 
 	testServer.mockStore.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user, nil)
-	url := "/api/v1/user/signup"
+	url := "/api/v1/users/signup"
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 
 	testServer.server.router.ServeHTTP(testServer.recorder, request)
 	require.Equal(t, testServer.recorder.Code, http.StatusOK)
-	requireBodyMatchCreaterUser(t, testServer.recorder.Body, user)
+	requireBodyMatchUserProfile(t, testServer.recorder.Body, userProfile)
 }
 
 //randomUserAndPassword generates a random account
@@ -93,14 +94,15 @@ func randomUserAndPassword(t *testing.T) (user db.User, password string) {
 	}, password
 }
 
-//requireBodyMatchCreateruser checks if the server recorder body for creatUser matches the user object
-func requireBodyMatchCreaterUser(t *testing.T, body *bytes.Buffer, user db.User) {
+//requireBodyMatchuserProfile checks if the server recorder body for creatUser matches the user object
+func requireBodyMatchUserProfile(t *testing.T, body *bytes.Buffer, user UserProfile) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var getUser createUserRequest
-	err = json.Unmarshal(data, &getUser)
+	var resp ApiResponse[UserProfile]
+	err = json.Unmarshal(data, &resp)
+	profile := resp.Data
 	require.NoError(t, err)
-	require.Equal(t, user.FullName, getUser.FullName)
-	require.Equal(t, user.Email, getUser.Email)
+	require.Equal(t, user.FullName, profile.FullName)
+	require.Equal(t, user.Email, profile.Email)
 }
