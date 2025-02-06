@@ -44,8 +44,8 @@ func interceptor(server *Server) gin.HandlerFunc {
 			originalWriter.WriteHeader(statusCode)
 
 			response := handleInternalResponse(ApiResponse[any]{
-				statusCode: statusCode,
-				data:       nil,
+				StatusCode: statusCode,
+				Data:       nil,
 			})
 
 			json.NewEncoder(originalWriter).Encode(response)

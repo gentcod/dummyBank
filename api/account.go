@@ -27,9 +27,9 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	var req createAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -48,18 +48,18 @@ func (server *Server) createAccount(ctx *gin.Context) {
 			switch pqErr.Code.Name() {
 			case "foreign_key_violation", "unique_violation":
 				ctx.JSON(http.StatusForbidden, handlerResponse(ApiResponse[error]{
-					statusCode: http.StatusForbidden,
-					message:    err.Error(),
-					data:       nil,
+					StatusCode: http.StatusForbidden,
+					Message:    err.Error(),
+					Data:       nil,
 				}))
 				return
 			}
 		}
 
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -67,9 +67,9 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	userAccount := getUserAccount(authPayload.Username, account)
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[UserAccount]{
-		statusCode: http.StatusOK,
-		message:    "account has been created successfully",
-		data:       userAccount,
+		StatusCode: http.StatusOK,
+		Message:    "account has been created successfully",
+		Data:       userAccount,
 	}))
 }
 
@@ -77,9 +77,9 @@ func (server *Server) updateAccount(ctx *gin.Context) {
 	var req updateAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -93,17 +93,17 @@ func (server *Server) updateAccount(ctx *gin.Context) {
 	account, err := server.store.UpdateAccount(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[db.Account]{
-		statusCode: http.StatusOK,
-		message:    "account has been updated successfully",
-		data:       account,
+		StatusCode: http.StatusOK,
+		Message:    "account has been updated successfully",
+		Data:       account,
 	}))
 }
 
@@ -111,9 +111,9 @@ func (server *Server) getAccountById(ctx *gin.Context) {
 	var req getEntityByIdUUIDRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -122,16 +122,16 @@ func (server *Server) getAccountById(ctx *gin.Context) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, handlerResponse(ApiResponse[error]{
-				statusCode: http.StatusNotFound,
-				message:    err.Error(),
-				data:       nil,
+				StatusCode: http.StatusNotFound,
+				Message:    err.Error(),
+				Data:       nil,
 			}))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -139,17 +139,17 @@ func (server *Server) getAccountById(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	if account.Owner != authPayload.ID {
 		ctx.JSON(http.StatusUnauthorized, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusUnauthorized,
-			message:    errors.New("account doesn't belong to the authenticated user").Error(),
-			data:       nil,
+			StatusCode: http.StatusUnauthorized,
+			Message:    errors.New("account doesn't belong to the authenticated user").Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[db.Account]{
-		statusCode: http.StatusOK,
-		message:    "account has been fetched successfully",
-		data:       account,
+		StatusCode: http.StatusOK,
+		Message:    "account has been fetched successfully",
+		Data:       account,
 	}))
 }
 
@@ -157,9 +157,9 @@ func (server *Server) getAccounts(ctx *gin.Context) {
 	var req pagination
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -174,17 +174,17 @@ func (server *Server) getAccounts(ctx *gin.Context) {
 	accounts, err := server.store.GetAccounts(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[[]db.Account]{
-		statusCode: http.StatusOK,
-		message:    "accounts have been fetched successfully",
-		data:       accounts,
+		StatusCode: http.StatusOK,
+		Message:    "accounts have been fetched successfully",
+		Data:       accounts,
 	}))
 }
 

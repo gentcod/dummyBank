@@ -12,9 +12,9 @@ func (server *Server) getEntry(ctx *gin.Context) {
 	var req getEntityByIdRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -23,24 +23,24 @@ func (server *Server) getEntry(ctx *gin.Context) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, handlerResponse(ApiResponse[error]{
-				statusCode: http.StatusNotFound,
-				message:    err.Error(),
-				data:       nil,
+				StatusCode: http.StatusNotFound,
+				Message:    err.Error(),
+				Data:       nil,
 			}))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[db.Entry]{
-		statusCode: http.StatusOK,
-		message:    "entry has been fetched successfully",
-		data:       entry,
+		StatusCode: http.StatusOK,
+		Message:    "entry has been fetched successfully",
+		Data:       entry,
 	}))
 }
 
@@ -48,9 +48,9 @@ func (server *Server) getEntries(ctx *gin.Context) {
 	var req pagination
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -63,16 +63,16 @@ func (server *Server) getEntries(ctx *gin.Context) {
 	entries, err := server.store.GetEntries(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[[]db.Entry]{
-		statusCode: http.StatusOK,
-		message:    "entries have been fetched successfully",
-		data:       entries,
+		StatusCode: http.StatusOK,
+		Message:    "entries have been fetched successfully",
+		Data:       entries,
 	}))
 }

@@ -27,9 +27,9 @@ func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -37,9 +37,9 @@ func (server *Server) createUser(ctx *gin.Context) {
 	hashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -58,26 +58,26 @@ func (server *Server) createUser(ctx *gin.Context) {
 			switch pqErr.Code.Name() {
 			case "unique_violation":
 				ctx.JSON(http.StatusForbidden, handlerResponse(ApiResponse[error]{
-					statusCode: http.StatusForbidden,
-					message:    err.Error(),
-					data:       nil,
+					StatusCode: http.StatusForbidden,
+					Message:    err.Error(),
+					Data:       nil,
 				}))
 				return
 			}
 		}
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	userProfile := getUserProfile(user)
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[UserProfile]{
-		statusCode: http.StatusOK,
-		message:    "user has been created successfully",
-		data:       userProfile,
+		StatusCode: http.StatusOK,
+		Message:    "user has been created successfully",
+		Data:       userProfile,
 	}))
 }
 
@@ -91,9 +91,9 @@ func (server *Server) updateUser(ctx *gin.Context) {
 	var req updateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -106,9 +106,9 @@ func (server *Server) updateUser(ctx *gin.Context) {
 	hashedNewPassword, err := util.HashPassword(req.NewPassword)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -128,18 +128,18 @@ func (server *Server) updateUser(ctx *gin.Context) {
 	updatedUser, err := server.store.UpdateUser(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	userProfile := getUserProfile(updatedUser)
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[UserProfile]{
-		statusCode: http.StatusOK,
-		message:    "user has been updated successfully",
-		data:       userProfile,
+		StatusCode: http.StatusOK,
+		Message:    "user has been updated successfully",
+		Data:       userProfile,
 	}))
 }
 
@@ -163,9 +163,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -178,9 +178,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	accessToken, accessPayload, err := server.tokenGenerator.CreateToken(user.Username, user.ID, server.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -188,9 +188,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	refreshToken, refreshPayload, err := server.tokenGenerator.CreateToken(user.Username, user.ID, server.config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -206,9 +206,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -224,9 +224,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[loginUserResponse]{
-		statusCode: http.StatusOK,
-		message:    "logged in successfully",
-		data:       resp,
+		StatusCode: http.StatusOK,
+		Message:    "logged in successfully",
+		Data:       resp,
 	}))
 }
 
@@ -235,16 +235,16 @@ func (server *Server) validateUser(ctx *gin.Context, username string, password s
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, handlerResponse(ApiResponse[error]{
-				statusCode: http.StatusNotFound,
-				message:    "User not found",
-				data:       nil,
+				StatusCode: http.StatusNotFound,
+				Message:    "User not found",
+				Data:       nil,
 			}))
 			return user, false
 		}
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return user, false
 	}
@@ -252,9 +252,9 @@ func (server *Server) validateUser(ctx *gin.Context, username string, password s
 	err = util.CheckPassword(password, user.HarshedPassword)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusUnauthorized,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusUnauthorized,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return user, false
 	}

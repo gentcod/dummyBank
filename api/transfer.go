@@ -39,9 +39,9 @@ func (server *Server) getTransferById(ctx *gin.Context) {
 	var req getEntityByIdRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -50,24 +50,24 @@ func (server *Server) getTransferById(ctx *gin.Context) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, handlerResponse(ApiResponse[error]{
-				statusCode: http.StatusNotFound,
-				message:    err.Error(),
-				data:       nil,
+				StatusCode: http.StatusNotFound,
+				Message:    err.Error(),
+				Data:       nil,
 			}))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[db.Transfer]{
-		statusCode: http.StatusOK,
-		message:    "transfer record has been fetched successfully",
-		data:       transfer,
+		StatusCode: http.StatusOK,
+		Message:    "transfer record has been fetched successfully",
+		Data:       transfer,
 	}))
 }
 
@@ -75,9 +75,9 @@ func (server *Server) getTransfers(ctx *gin.Context) {
 	var req pagination
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -90,17 +90,17 @@ func (server *Server) getTransfers(ctx *gin.Context) {
 	transfers, err := server.store.GetTransfers(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[[]db.Transfer]{
-		statusCode: http.StatusOK,
-		message:    "transfer records have been fetched successfully",
-		data:       transfers,
+		StatusCode: http.StatusOK,
+		Message:    "transfer records have been fetched successfully",
+		Data:       transfers,
 	}))
 }
 
@@ -109,9 +109,9 @@ func (server *Server) createTransferTx(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -125,9 +125,9 @@ func (server *Server) createTransferTx(ctx *gin.Context) {
 	if senderAcc.Owner != authPayload.UserID {
 		err := errors.New("sender account doesn't belong to the authenticated user")
 		ctx.JSON(http.StatusUnauthorized, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusUnauthorized,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusUnauthorized,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return
 	}
@@ -159,9 +159,9 @@ func (server *Server) createTransferTx(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[createTransferResponse]{
-		statusCode: http.StatusOK,
-		message:    "transfer has been processed successfully",
-		data:       resp,
+		StatusCode: http.StatusOK,
+		Message:    "transfer has been processed successfully",
+		Data:       resp,
 	}))
 }
 
@@ -170,16 +170,16 @@ func (server *Server) validateAccount(ctx *gin.Context, accountId uuid.UUID, cur
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, handlerResponse(ApiResponse[error]{
-				statusCode: http.StatusNotFound,
-				message:    err.Error(),
-				data:       nil,
+				StatusCode: http.StatusNotFound,
+				Message:    err.Error(),
+				Data:       nil,
 			}))
 			return account, false
 		}
 		ctx.JSON(http.StatusInternalServerError, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusInternalServerError,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return account, false
 	}
@@ -187,9 +187,9 @@ func (server *Server) validateAccount(ctx *gin.Context, accountId uuid.UUID, cur
 	if account.Currency != currency {
 		err := fmt.Errorf("account %v currency mismatch: %v vs %v", accountId, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, handlerResponse(ApiResponse[error]{
-			statusCode: http.StatusBadRequest,
-			message:    err.Error(),
-			data:       nil,
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
 		}))
 		return account, false
 	}

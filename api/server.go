@@ -79,13 +79,13 @@ func (server *Server) Start(address string) error {
 }
 
 type ApiResponse[T any] struct {
-	statusCode int
-	message    string
-	data       T
+	StatusCode int    `json:"statusCode"`
+	Message    string `json:"message"`
+	Data       T      `json:"data"`
 }
 
 func handlerResponse[T any](resp ApiResponse[T]) gin.H {
-	if resp.statusCode < 300 {
+	if resp.StatusCode < 300 {
 		return apiSuccessResponse(resp)
 	}
 
@@ -95,25 +95,25 @@ func handlerResponse[T any](resp ApiResponse[T]) gin.H {
 func apiSuccessResponse[T any](resp ApiResponse[T]) gin.H {
 	return gin.H{
 		"status":     "success",
-		"statusCode": resp.statusCode,
-		"message":    resp.message,
-		"data":       resp.data,
+		"statusCode": resp.StatusCode,
+		"message":    resp.Message,
+		"data":       resp.Data,
 	}
 }
 
 func apiErrorResponse[T any](resp ApiResponse[T]) gin.H {
 	return gin.H{
 		"status":     "error",
-		"statusCode": resp.statusCode,
-		"message":    resp.message,
-		"data":       resp.data,
+		"statusCode": resp.StatusCode,
+		"message":    resp.Message,
+		"data":       resp.Data,
 	}
 }
 
 func handleInternalResponse(resp ApiResponse[any]) gin.H {
 	return gin.H{
 		"status":     "error",
-		"statusCode": resp.statusCode,
+		"statusCode": resp.StatusCode,
 		"message":    "An unexpected error occured",
 	}
 }
