@@ -18,6 +18,8 @@ type Config struct {
 	RefreshTokenDuration time.Duration
 	MigrationUrl string
 	RedisAddress string
+	MailUser string
+	MailPassword string
 }
 
 func LoadConfig(path string) (config Config, err error) {
