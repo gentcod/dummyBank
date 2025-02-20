@@ -49,6 +49,7 @@ func TestCreateUserAPI(t *testing.T) {
 	testServer := testServerInit(t)
 
 	user, password := randomUserAndPassword(t)
+	userTxResult := db.CreateUserTxResult{User: user}
 	userProfile := getUserProfile(user)
 
 	requestBody := gin.H{
@@ -71,7 +72,7 @@ func TestCreateUserAPI(t *testing.T) {
 	jsonBody, err := json.Marshal(requestBody)
 	require.NoError(t, err)
 
-	testServer.mockStore.EXPECT().CreateUserTx(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user, nil)
+	testServer.mockStore.EXPECT().CreateUserTx(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(userTxResult, nil)
 	url := "/api/v1/users/signup"
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(jsonBody))
 	require.NoError(t, err)
