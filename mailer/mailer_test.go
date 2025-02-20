@@ -25,8 +25,8 @@ func TestSendEmail(t *testing.T) {
 		VerificationLink: "https://github.com/gentcod",
 	}
 
-	result := mailer.SendEmail(recipient)
-	require.NoError(t, result[0].Error)
+	err = mailer.SendEmail(recipient)
+	require.NoError(t, err)
 }
 
 func TestSendBulkEmail(t *testing.T) {
@@ -59,8 +59,6 @@ func TestSendBulkEmail(t *testing.T) {
 		},
 	}
 
-	mailResult := mailer.SendEmail(recipients...)
-	for _, result := range mailResult {
-		require.NoError(t, result.Error)
-	}
+	err = mailer.SendEmail(recipients...)
+	require.NoError(t, err)
 }

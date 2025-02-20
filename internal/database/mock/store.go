@@ -7,6 +7,7 @@ package mockdb
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	db "github.com/gentcod/DummyBank/internal/database"
 	gomock "github.com/golang/mock/gomock"
@@ -124,6 +125,21 @@ func (m *MockStore) CreateUserTx(arg0 context.Context, arg1 db.CreateUserTxParam
 func (mr *MockStoreMockRecorder) CreateUserTx(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserTx", reflect.TypeOf((*MockStore)(nil).CreateUserTx), arg0, arg1)
+}
+
+// CreateVerifyEmailCache mocks base method.
+func (m *MockStore) CreateVerifyEmailCache(arg0 context.Context, arg1 db.RedisData, arg2 time.Duration) (db.RedisData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateVerifyEmailCache", arg0, arg1, arg2)
+	ret0, _ := ret[0].(db.RedisData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateVerifyEmailCache indicates an expected call of CreateVerifyEmailCache.
+func (mr *MockStoreMockRecorder) CreateVerifyEmailCache(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVerifyEmailCache", reflect.TypeOf((*MockStore)(nil).CreateVerifyEmailCache), arg0, arg1, arg2)
 }
 
 // DeleteAccount mocks base method.
@@ -304,6 +320,21 @@ func (mr *MockStoreMockRecorder) GetUserWithPassword(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserWithPassword", reflect.TypeOf((*MockStore)(nil).GetUserWithPassword), arg0, arg1)
 }
 
+// GetVerifyEmailCache mocks base method.
+func (m *MockStore) GetVerifyEmailCache(arg0 context.Context, arg1 string) (db.RedisData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVerifyEmailCache", arg0, arg1)
+	ret0, _ := ret[0].(db.RedisData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVerifyEmailCache indicates an expected call of GetVerifyEmailCache.
+func (mr *MockStoreMockRecorder) GetVerifyEmailCache(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVerifyEmailCache", reflect.TypeOf((*MockStore)(nil).GetVerifyEmailCache), arg0, arg1)
+}
+
 // TransferTx mocks base method.
 func (m *MockStore) TransferTx(arg0 context.Context, arg1 db.TransferTxParams) (db.TransferTXResult, error) {
 	m.ctrl.T.Helper()
@@ -347,4 +378,18 @@ func (m *MockStore) UpdateUser(arg0 context.Context, arg1 db.UpdateUserParams) (
 func (mr *MockStoreMockRecorder) UpdateUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockStore)(nil).UpdateUser), arg0, arg1)
+}
+
+// VerifyUserEmail mocks base method.
+func (m *MockStore) VerifyUserEmail(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyUserEmail", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyUserEmail indicates an expected call of VerifyUserEmail.
+func (mr *MockStoreMockRecorder) VerifyUserEmail(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyUserEmail", reflect.TypeOf((*MockStore)(nil).VerifyUserEmail), arg0, arg1)
 }

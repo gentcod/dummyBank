@@ -18,7 +18,7 @@ import (
 )
 
 type eqCreateUserParamsMatcher struct {
-	arg	db.CreateUserParams
+	arg	db.CreateUserTxParams
 	password string
 }
 
@@ -33,8 +33,8 @@ func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 		return false
 	}
 
-	e.arg.HarshedPassword = arg.HarshedPassword
-	e.arg.ID = arg.ID
+	e.arg.CreateUserParams.HarshedPassword = arg.HarshedPassword
+	e.arg.CreateUserParams.ID = arg.ID
 	return reflect.DeepEqual(e.arg, arg)
 }
 
@@ -42,7 +42,7 @@ func (e eqCreateUserParamsMatcher) String() string {
 	return fmt.Sprintf("matches arg %v and password %v", e.arg, e.password)
 }
 
-func EqCreateUserParams(arg db.CreateUserParams, password string) gomock.Matcher { return eqCreateUserParamsMatcher{arg, password} }
+func EqCreateUserParams(arg db.CreateUserTxParams, password string) gomock.Matcher { return eqCreateUserParamsMatcher{arg, password} }
 
 
 func TestCreateUserAPI(t *testing.T) {
@@ -58,18 +58,20 @@ func TestCreateUserAPI(t *testing.T) {
 		"password": password,
 	}
 
-	arg := db.CreateUserParams{
-		ID: uuid.New(),
-		Username: user.Username,
-		FullName: user.FullName,
-		Email: user.Email,
-		HarshedPassword: user.HarshedPassword,
+	arg := db.CreateUserTxParams{
+		CreateUserParams: db.CreateUserParams{
+			ID: uuid.New(),
+			Username: user.Username,
+			FullName: user.FullName,
+			Email: user.Email,
+			HarshedPassword: user.HarshedPassword,
+		},
 	}
 
 	jsonBody, err := json.Marshal(requestBody)
 	require.NoError(t, err)
 
-	testServer.mockStore.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user, nil)
+	testServer.mockStore.EXPECT().CreateUserTx(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user, nil)
 	url := "/api/v1/users/signup"
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(jsonBody))
 	require.NoError(t, err)

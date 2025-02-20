@@ -23,3 +23,6 @@ WHERE username = $1 LIMIT 1;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;
+
+-- name: VerifyUserEmail :exec
+UPDATE users SET is_email_verified = true WHERE id = $1;

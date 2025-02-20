@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -15,6 +16,7 @@ import (
 	_ "github.com/gentcod/DummyBank/doc/statik"
 	"github.com/gentcod/DummyBank/gapi"
 	db "github.com/gentcod/DummyBank/internal/database"
+	"github.com/gentcod/DummyBank/mailer"
 	"github.com/gentcod/DummyBank/pb"
 	"github.com/gentcod/DummyBank/util"
 	"github.com/gentcod/DummyBank/worker"
@@ -31,7 +33,7 @@ import (
 )
 
 func main() {
-	config, err := util.LoadConfig("./app.env")
+	config, err := util.LoadConfig("./.env")
 	if err != nil {
 		log.Error().AnErr("cannot load config", err)
 	}
@@ -47,7 +49,11 @@ func main() {
 
 	// runDBMigration(config.MigrationUrl, config.DBUrl)
 
-	store := db.NewStore(conn)
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: config.RedisAddress,
+	})
+
+	store := db.NewStore(conn, redisClient)
 
 	redisOpt := asynq.RedisClientOpt{
 		Addr: config.RedisAddress,
@@ -55,7 +61,7 @@ func main() {
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
-	go runTaskProcessor(redisOpt, store)
+	go runTaskProcessor(redisOpt, store, config.MailUser, config.MailPassword)
 	// runGinServer(config, store, taskDistributor)
 	go runGatewayServer(config, store, taskDistributor)
 	runGrpcServer(config, store, taskDistributor)
@@ -63,7 +69,7 @@ func main() {
 
 // runGinServer initializes HTTP server.
 func runGinServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
-	server, err := api.NewServer(config, store)
+	server, err := api.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Error().AnErr("Couldn't initialize the server:", err)
 	}
@@ -147,10 +153,15 @@ func runGatewayServer(config util.Config, store db.Store, taskDistributor worker
 	}
 }
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, user, password string) {
+	mailer, err := mailer.NewMailer("", user, password)
+	if err != nil {
+		log.Error().AnErr("Couldn't initialize the email sender:", err)
+	}
+	
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Info().Msg("start task processor")
-	err := taskProcessor.Start()
+	err = taskProcessor.Start()
 	if err != nil {
 		log.Fatal().AnErr("failed to start task processor:", err)
 	}

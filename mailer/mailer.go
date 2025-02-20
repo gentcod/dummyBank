@@ -21,20 +21,16 @@ const (
 
 type MailSender interface {
 	// sendMail is the main func that holds to the logic for sending emails to a single recipient
-	sendMail(recipient Recipient) EmailResult
+	sendMail(recipient Recipient) error
 
 	// SendEmail is a generic function that helps to send emails to one or more recipients.
 	// It handles sending emails to multiple clients concurrently
-	SendEmail(recipients ...Recipient) []EmailResult
-}
-
-type Mailer struct {
-	sender      *GmailSender
-	credentials credentials
+	SendEmail(recipients ...Recipient) error
 }
 
 type GmailSender struct {
-	smtp.Auth
+	auth smtp.Auth
+	credentials credentials
 }
 
 type credentials struct {
@@ -53,14 +49,14 @@ type Recipient struct {
 }
 
 func NewMailer(identity, email, password string) (MailSender, error) {
-	sender := newGmailSender(identity, email, password)
+	auth := smtp.PlainAuth(identity, email, password, gmailSmtpAddress)
 	html, err := os.ReadFile(htmlFilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Mailer{
-		sender: &sender,
+	return &GmailSender{
+		auth: auth,
 		credentials: credentials{
 			identity: identity,
 			email:    email,
@@ -70,17 +66,8 @@ func NewMailer(identity, email, password string) (MailSender, error) {
 	}, nil
 }
 
-func newGmailSender(identity, email, password string) GmailSender {
-	auth := smtp.PlainAuth(identity, email, password, gmailSmtpAddress)
-
-	return GmailSender{
-		auth,
-	}
-}
-
-func (mailer *Mailer) SendEmail(recipients ...Recipient) []EmailResult {
-	results := make([]EmailResult, 0, len(recipients))
-	resultsChan := make(chan EmailResult, len(recipients))
+func (mailer *GmailSender) SendEmail(recipients ...Recipient) error {
+	resultsChan := make(chan error, len(recipients))
 
 	const maxWorkers = 5
 	var wg sync.WaitGroup
@@ -93,8 +80,8 @@ func (mailer *Mailer) SendEmail(recipients ...Recipient) []EmailResult {
 			defer wg.Done()
 
 			for recipient := range jobs {
-				result := mailer.sendMail(recipient)
-				resultsChan <- result
+				err  := mailer.sendMail(recipient)
+				resultsChan <- err
 			}
 		}()
 	}
@@ -109,19 +96,25 @@ func (mailer *Mailer) SendEmail(recipients ...Recipient) []EmailResult {
 		close(resultsChan)
 	}()
 
-	for result := range resultsChan {
-		results = append(results, result)
+	for err := range resultsChan {
+		if err != nil {
+			return err
+		}
 	}
 
-	return results
+	return nil
 }
 
-func (mailer *Mailer) sendMail(recipient Recipient) EmailResult {
-	var result EmailResult
-	htmlContent, err := generateEmailBody(mailer.credentials.template, recipient.Name, recipient.VerificationLink)
+func (mailer *GmailSender) sendMail(recipient Recipient) error {
+	htmlContent, err := generateEmailBody(
+		mailer.credentials.template,
+		Data{
+			Name: recipient.Name,
+			VerificationLink: recipient.VerificationLink,
+		},
+	)
 	if err != nil {
-		result.Error = err
-		return result
+		return err
 	}
 
 	headers := fmt.Sprintf("From: %s\r\n", mailer.credentials.identity)
@@ -140,16 +133,14 @@ func (mailer *Mailer) sendMail(recipient Recipient) EmailResult {
 
 	err = smtp.SendMail(
 		gmailSmtpServerAddress,
-		mailer.sender.Auth,
+		mailer.auth,
 		mailer.credentials.email,
 		to,
 		msg,
 	)
 	if err != nil {
-		result.Error = fmt.Errorf("failed to send message to %s: %v", recipient.Email, err)
-		return result
+		return fmt.Errorf("failed to send message to %s: %v", recipient.Email, err)
 	}
 
-	result.Recipient = recipient
-	return result
+	return nil
 }

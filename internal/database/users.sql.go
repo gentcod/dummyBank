@@ -16,7 +16,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, username, full_name, email, harshed_password)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, username, harshed_password, full_name, email, password_changed_at, created_at
+RETURNING id, username, harshed_password, full_name, email, password_changed_at, created_at, is_email_verified
 `
 
 type CreateUserParams struct {
@@ -44,6 +44,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Email,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
@@ -84,7 +85,7 @@ func (q *Queries) GetUser(ctx context.Context, username string) (GetUserRow, err
 }
 
 const getUserWithPassword = `-- name: GetUserWithPassword :one
-SELECT id, username, harshed_password, full_name, email, password_changed_at, created_at FROM users
+SELECT id, username, harshed_password, full_name, email, password_changed_at, created_at, is_email_verified FROM users
 WHERE username = $1 LIMIT 1
 `
 
@@ -99,6 +100,7 @@ func (q *Queries) GetUserWithPassword(ctx context.Context, username string) (Use
 		&i.Email,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
@@ -111,7 +113,7 @@ SET
    email = COALESCE($3, email),
    password_changed_at = COALESCE($4, password_changed_at)
 WHERE id = $5
-RETURNING id, username, harshed_password, full_name, email, password_changed_at, created_at
+RETURNING id, username, harshed_password, full_name, email, password_changed_at, created_at, is_email_verified
 `
 
 type UpdateUserParams struct {
@@ -139,6 +141,16 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Email,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
+}
+
+const verifyUserEmail = `-- name: VerifyUserEmail :exec
+UPDATE users SET is_email_verified = true WHERE id = $1
+`
+
+func (q *Queries) VerifyUserEmail(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, verifyUserEmail, id)
+	return err
 }
