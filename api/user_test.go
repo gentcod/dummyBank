@@ -23,18 +23,18 @@ type eqCreateUserParamsMatcher struct {
 }
 
 func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
-	arg, ok := x.(db.CreateUserParams)
+	arg, ok := x.(db.CreateUserTxParams)
 	if !ok {
 		return false
 	}
 
-	err := util.CheckPassword(e.password, arg.HarshedPassword)
+	err := util.CheckPassword(e.password, arg.CreateUserParams.HarshedPassword)
 	if err != nil {
 		return false
 	}
 
-	e.arg.CreateUserParams.HarshedPassword = arg.HarshedPassword
-	e.arg.CreateUserParams.ID = arg.ID
+	e.arg.CreateUserParams.HarshedPassword = arg.CreateUserParams.HarshedPassword
+	e.arg.CreateUserParams.ID = arg.CreateUserParams.ID
 	return reflect.DeepEqual(e.arg, arg)
 }
 
