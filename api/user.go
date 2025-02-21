@@ -9,8 +9,10 @@ import (
 
 	db "github.com/gentcod/DummyBank/internal/database"
 	"github.com/gentcod/DummyBank/util"
+	"github.com/gentcod/DummyBank/worker"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"github.com/lib/pq"
 )
 
@@ -44,15 +46,29 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateUserParams{
-		ID:              uuid.New(),
-		Username:        req.Username,
-		FullName:        req.FullName,
-		Email:           req.Email,
-		HarshedPassword: hashedPassword,
+	arg := db.CreateUserTxParams{
+		CreateUserParams: db.CreateUserParams{
+			ID:              uuid.New(),
+			Username:        req.Username,
+			FullName:        req.FullName,
+			Email:           req.Email,
+			HarshedPassword: hashedPassword,
+		},
+		AfterCreate: func(user db.User) error {
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Username: user.Username,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+		
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+		},
 	}
 
-	user, err := server.store.CreateUser(ctx, arg)
+	userTx, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
@@ -73,7 +89,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	userProfile := getUserProfile(user)
+	userProfile := getUserProfile(userTx.User)
 	ctx.JSON(http.StatusOK, handlerResponse(ApiResponse[UserProfile]{
 		StatusCode: http.StatusOK,
 		Message:    "user has been created successfully",

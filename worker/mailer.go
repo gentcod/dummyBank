@@ -2,15 +2,22 @@ package worker
 
 import (
 	"context"
-	// "database/sql"
+	"time"
+
 	"encoding/json"
 	"fmt"
 
+	db "github.com/gentcod/DummyBank/internal/database"
+	"github.com/gentcod/DummyBank/mailer"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
 
-const TaskSendVerifyEmail = "task:send_verify_email"
+const (
+	TaskSendVerifyEmail = "task:send_verify_email"
+	expiration          = "15m"
+	domain              = "http://dummybank.org"
+)
 
 type PayloadSendVerifyEmail struct {
 	Username string `json:"username"`
@@ -21,7 +28,7 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 	payload *PayloadSendVerifyEmail,
 	opts ...asynq.Option,
 ) error {
-	jsonPayload, err := json.Marshal(payload) 
+	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal task payload: %w", err)
 	}
@@ -34,7 +41,7 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 
 	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
 		Str("queue", info.Queue).Int("max_query", info.MaxRetry).Msg("enqueued task")
-	
+
 	return nil
 }
 
@@ -49,22 +56,37 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(
 
 	user, err := processor.store.GetUser(ctx, payload.Username)
 	if err != nil {
-		// if err == sql.ErrNoRows {
-		// 	return fmt.Errorf("user does not exists: %w", asynq.SkipRetry)
-		// }
 		return fmt.Errorf("failed to get user: %w", err)
 	}
 
+	// Create cache
+	exp, _ := time.ParseDuration(expiration)
+	arg := db.RedisData{
+		Username: user.Username,
+		Email:    user.Email,
+	}
+	data, err := processor.store.CreateVerifyEmailCache(ctx, arg, exp)
+	if err != nil {
+		return fmt.Errorf("failed to create verify user email cache: %w", err)
+	}
+
 	// SEND EMAIL
+	verifyLink := fmt.Sprintf("%s?id=%v&code=%d", domain, data.ID, data.SecretCode)
+	recipient := mailer.Recipient{
+		Name:             user.Username,
+		Email:            user.Email,
+		VerificationLink: verifyLink,
+	}
+
+	log.Info().Any("%v",data)
+	log.Info().Any("%v+",processor.mailer)
+
+	if err := processor.mailer.SendEmail(recipient); err != nil {
+		return fmt.Errorf("failed to send user verification email: %w", err)
+	}
 	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
-		Str("email", user.Email).Msg("processed task")
+		Str("email", user.Email).
+		Msg(fmt.Sprintf("processed task: email sent to %s", recipient.Email))
 
 	return nil
-}
-
-func (processor *RedisTaskProcessor) Start() error {
-	mux := asynq.NewServeMux()
-
-	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
-	return processor.server.Start(mux)
 }

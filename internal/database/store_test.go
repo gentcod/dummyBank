@@ -3,24 +3,25 @@ package db
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/gentcod/DummyBank/util"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTransferTx(t *testing.T) {
-	store := NewStore(testDB)
+	store := NewStore(testDB, testRDB)
 
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	amount := util.RandomMoney()
 
 	arg := TransferTxParams{
-		SenderID: account1.ID,
+		SenderID:    account1.ID,
 		RecipientID: account2.ID,
-		Amount: amount,
+		Amount:      amount,
 	}
-	
+
 	// run n concurrent transfer transactions
 	n := 5
 
@@ -28,7 +29,7 @@ func TestTransferTx(t *testing.T) {
 	results := make(chan TransferTXResult)
 
 	for i := 0; i < n; i++ {
-		go func ()  {
+		go func() {
 			result, err := store.TransferTx(context.Background(), arg)
 
 			errs <- err
@@ -45,7 +46,7 @@ func TestTransferTx(t *testing.T) {
 
 		result := <-results
 		require.NotEmpty(t, result)
-	
+
 		//check transfer
 		transfer := result.Transfer
 		require.NotEmpty(t, transfer)
@@ -97,7 +98,7 @@ func TestTransferTx(t *testing.T) {
 		diff2 := recipientAccount.Balance - account2.Balance
 		require.Equal(t, diff1, diff2)
 		require.True(t, diff1 > 0)
-		require.True(t, diff1 % amount == 0)
+		require.True(t, diff1%amount == 0)
 
 		k := int(diff1 / amount)
 		require.True(t, k >= 1 && k <= n)
@@ -119,31 +120,30 @@ func TestTransferTx(t *testing.T) {
 }
 
 func TestTransferTxDeadlock(t *testing.T) {
-	store := NewStore(testDB)
+	store := NewStore(testDB, testRDB)
 
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	amount := util.RandomMoney()
-	
+
 	// run n concurrent transfer transactions
 	n := 10
-
 	errs := make(chan error)
- 
+
 	for i := 0; i < n; i++ {
 		senderAccount := account1.ID
 		recAccount := account2.ID
 
-		if i % 2 == 1 {
+		if i%2 == 1 {
 			senderAccount = account2.ID
 			recAccount = account1.ID
 		}
 
-		go func ()  {
-			_, err := store.TransferTx(context.Background(), TransferTxParams {
-				SenderID: senderAccount,
+		go func() {
+			_, err := store.TransferTx(context.Background(), TransferTxParams{
+				SenderID:    senderAccount,
 				RecipientID: recAccount,
-				Amount: amount,
+				Amount:      amount,
 			})
 
 			errs <- err
@@ -168,4 +168,47 @@ func TestTransferTxDeadlock(t *testing.T) {
 
 	require.Equal(t, account1.Balance, updatedAccount1.Balance)
 	require.Equal(t, account2.Balance, updatedAccount2.Balance)
+}
+
+func TestCache(t *testing.T) {
+	store := NewStore(testDB, testRDB)
+	arg := RedisData{
+		Username: util.RandomOwner(),
+		Email: util.RandomEmail(7),
+	}
+
+	exp,err := time.ParseDuration(testExpiration)
+	require.NoError(t, err)
+
+	result, err := store.CreateVerifyEmailCache(context.Background(), arg, exp)
+	require.NoError(t, err)
+	require.Equal(t, arg.Username, result.Username)
+	require.Equal(t, arg.Email, result.Email)
+	require.NotEqual(t, 0, result.SecretCode)
+
+	getResult, err := store.GetVerifyEmailCache(context.Background(), arg.Username)
+	require.NoError(t, err)
+	require.Equal(t, getResult.Username, result.Username)
+	require.Equal(t, getResult.Email, result.Email)
+	require.Equal(t, getResult.SecretCode, result.SecretCode)
+}
+
+func TestCacheExp(t *testing.T) {
+	store := NewStore(testDB, testRDB)
+	arg := RedisData{
+		Username: util.RandomOwner(),
+		Email: util.RandomEmail(7),
+	}
+	data, err := store.CreateVerifyEmailCache(context.Background(), arg, time.Second)
+	require.NoError(t, err)
+	
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	<-ticker.C
+
+	result, err := store.GetVerifyEmailCache(context.Background(), arg.Username)
+	require.Error(t, err)
+	require.NotEqual(t, arg.Username, result.Username)
+	require.NotEqual(t, arg.Email, result.Email)
+	require.NotEqual(t, data.SecretCode, result.SecretCode)
 }

@@ -20,6 +20,7 @@ type Config struct {
 	RedisAddress string
 	MailUser string
 	MailPassword string
+	RedisCacheExp time.Duration
 }
 
 func LoadConfig(path string) (config Config, err error) {

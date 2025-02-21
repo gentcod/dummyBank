@@ -33,7 +33,7 @@ func testServerInit(t *testing.T) (testServer TestServer) {
 	}
 
 	//Start test server and send requests
-	server, err := NewServer(config, testServer.mockStore)
+	server, err := NewServer(config, testServer.mockStore, nil)
 	require.NoError(t, err)
 
 	testServer.server = server
