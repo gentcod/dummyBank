@@ -4,15 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"net/smtp"
-	"os"
 	"sync"
 )
 
-// TODO: Implement has a customizable Go package
+// TODO: Implement as a customizable Go package
 const (
 	gmailSmtpAddress       = "smtp.gmail.com"
 	gmailSmtpServerAddress = "smtp.gmail.com:587"
-	htmlFilePath           = "../templates/test-mail.html"
 	attachmentPath         = "../templates/attachment.pdf"
 	subject                = "Account Verification"
 	htmlMime               = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n"
@@ -29,7 +27,7 @@ type MailSender interface {
 }
 
 type GmailSender struct {
-	auth smtp.Auth
+	auth        smtp.Auth
 	credentials credentials
 }
 
@@ -48,12 +46,8 @@ type Recipient struct {
 	VerificationLink string
 }
 
-func NewMailer(identity, email, password string) (MailSender, error) {
+func NewMailer(identity, email, password string, html []byte) (MailSender, error) {
 	auth := smtp.PlainAuth(identity, email, password, gmailSmtpAddress)
-	html, err := os.ReadFile(htmlFilePath)
-	if err != nil {
-		return nil, err
-	}
 
 	return &GmailSender{
 		auth: auth,
@@ -80,7 +74,7 @@ func (mailer *GmailSender) SendEmail(recipients ...Recipient) error {
 			defer wg.Done()
 
 			for recipient := range jobs {
-				err  := mailer.sendMail(recipient)
+				err := mailer.sendMail(recipient)
 				resultsChan <- err
 			}
 		}()
@@ -109,7 +103,7 @@ func (mailer *GmailSender) sendMail(recipient Recipient) error {
 	htmlContent, err := generateEmailBody(
 		mailer.credentials.template,
 		Data{
-			Name: recipient.Name,
+			Name:             recipient.Name,
 			VerificationLink: recipient.VerificationLink,
 		},
 	)

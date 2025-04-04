@@ -12,7 +12,7 @@ import (
 
 const (
 	QueueCritical = "critical"
-	QueueDefault = "default"
+	QueueDefault  = "default"
 )
 
 type TaskProcessor interface {
@@ -22,23 +22,25 @@ type TaskProcessor interface {
 
 type RedisTaskProcessor struct {
 	server *asynq.Server
-	store db.Store
+	store  db.Store
 	mailer mailer.MailSender
 }
 
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer mailer.MailSender) TaskProcessor {
 	logger := NewLogger()
 	redis.SetLogger(logger)
-	
+
 	server := asynq.NewServer(
 		redisOpt,
 		asynq.Config{
 			Queues: map[string]int{
 				QueueCritical: 10,
-				QueueDefault: 5,
+				QueueDefault:  5,
 			},
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
-				log.Error().AnErr("failed to process task:", err).Bytes("payload", task.Payload())
+				log.Error().AnErr("failed to process task:", err).
+					Str("type:", task.Type()).
+					Bytes("payload", task.Payload())
 			}),
 			Logger: logger,
 		},
@@ -46,7 +48,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer
 
 	return &RedisTaskProcessor{
 		server: server,
-		store: store,
+		store:  store,
 		mailer: mailer,
 	}
 }

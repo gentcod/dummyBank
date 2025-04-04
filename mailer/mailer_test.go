@@ -1,10 +1,15 @@
 package mailer
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gentcod/DummyBank/util"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	htmlFilePath = "../templates/test-mail.html"
 )
 
 func TestSendEmail(t *testing.T) {
@@ -15,8 +20,10 @@ func TestSendEmail(t *testing.T) {
 	config, err := util.LoadConfig("../test.env")
 	require.NoError(t, err)
 
-	email, password := config.MailUser, config.MailPassword
-	mailer, err := NewMailer("Dummy Bank", email, password)
+	html, err := os.ReadFile(htmlFilePath)
+	require.NoError(t, err)
+
+	mailer, err := NewMailer("Dummy Bank", config.MailUser, config.MailPassword, html)
 	require.NoError(t, err)
 
 	recipient := Recipient{
@@ -37,8 +44,10 @@ func TestSendBulkEmail(t *testing.T) {
 	config, err := util.LoadConfig("../test.env")
 	require.NoError(t, err)
 
-	email, password := config.MailUser, config.MailPassword
-	mailer, err := NewMailer("Dummy Bank", email, password)
+	html, err := os.ReadFile(htmlFilePath)
+	require.NoError(t, err)
+
+	mailer, err := NewMailer("Dummy Bank", config.MailUser, config.MailPassword, html)
 	require.NoError(t, err)
 
 	recipients := []Recipient{

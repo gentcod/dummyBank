@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -16,7 +17,7 @@ import (
 	_ "github.com/gentcod/DummyBank/doc/statik"
 	"github.com/gentcod/DummyBank/gapi"
 	db "github.com/gentcod/DummyBank/internal/database"
-	"github.com/gentcod/DummyBank/mailer"
+	mail "github.com/gentcod/DummyBank/mailer"
 	"github.com/gentcod/DummyBank/pb"
 	"github.com/gentcod/DummyBank/util"
 	"github.com/gentcod/DummyBank/worker"
@@ -30,6 +31,10 @@ import (
 	// "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+)
+
+const (
+	htmlFilePath = "./templates/test-mail.html"
 )
 
 func main() {
@@ -55,13 +60,24 @@ func main() {
 
 	store := db.NewStore(conn, redisClient)
 
+	html, err := os.ReadFile(htmlFilePath)
+	if err != nil {
+		htmlerr := fmt.Errorf("reading HTML file from: %s", htmlFilePath)
+		log.Error().AnErr("reading HTML file from: %s", htmlerr)
+	}
+
+	mailer, err := mail.NewMailer("", config.MailUser, config.MailPassword, html)
+	if err != nil {
+		log.Error().AnErr("Couldn't initialize the email sender:", err)
+	}
+
 	redisOpt := asynq.RedisClientOpt{
 		Addr: config.RedisAddress,
 	}
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
-	go runTaskProcessor(redisOpt, store, config.MailUser, config.MailPassword)
+	go runTaskProcessor(redisOpt, store, mailer)
 	// runGinServer(config, store, taskDistributor)
 	go runGatewayServer(config, store, taskDistributor)
 	runGrpcServer(config, store, taskDistributor)
@@ -84,7 +100,7 @@ func runGinServer(config util.Config, store db.Store, taskDistributor worker.Tas
 func runGrpcServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
 	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
-		log.Error().AnErr("Couldn't initialize the server:", err)
+		log.Fatal().AnErr("Couldn't initialize the server:", err)
 	}
 
 	grpcLogger := grpc.UnaryInterceptor(gapi.GrpcLogger)
@@ -153,15 +169,10 @@ func runGatewayServer(config util.Config, store db.Store, taskDistributor worker
 	}
 }
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, user, password string) {
-	mailer, err := mailer.NewMailer("", user, password)
-	if err != nil {
-		log.Error().AnErr("Couldn't initialize the email sender:", err)
-	}
-	
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer mail.MailSender) {
 	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Info().Msg("start task processor")
-	err = taskProcessor.Start()
+	err := taskProcessor.Start()
 	if err != nil {
 		log.Fatal().AnErr("failed to start task processor:", err)
 	}

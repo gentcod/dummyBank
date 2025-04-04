@@ -7,3 +7,4 @@
 .vscode
 docker-compose*.yaml
 *ref*
+kube
