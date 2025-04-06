@@ -202,7 +202,7 @@ func TestCacheExp(t *testing.T) {
 	data, err := store.CreateVerifyEmailCache(context.Background(), arg, time.Second)
 	require.NoError(t, err)
 
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	<-ticker.C
 
@@ -211,4 +211,20 @@ func TestCacheExp(t *testing.T) {
 	require.NotEqual(t, arg.Username, result.Username)
 	require.NotEqual(t, arg.Email, result.Email)
 	require.NotEqual(t, data.SecretCode, result.SecretCode)
+}
+
+func TestDeleteCache(t *testing.T) {
+	store := NewStore(testDB, testRDB)
+	arg := RedisData{
+		Username: util.RandomOwner(),
+		Email:    util.RandomEmail(7),
+	}
+	_, err := store.CreateVerifyEmailCache(context.Background(), arg, time.Second)
+	require.NoError(t, err)
+
+	err = store.DeleteVerifyEmailCache(context.Background(), arg.Username)
+	require.NoError(t, err)
+
+	_, err = store.GetVerifyEmailCache(context.Background(), arg.Username)
+	require.Error(t, err)
 }
