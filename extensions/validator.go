@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/mail"
 	"regexp"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -13,7 +14,7 @@ var (
 	// TODO: resolve passw0rd regex
 	isValidPassword = regexp.MustCompile(`^[a-z0-9_!@#$&+=]+$`).MatchString
 	isValidFullname = regexp.MustCompile(`^[a-zA-Z\s]+$`).MatchString
-	isValidId = func (id string) error {
+	isValidId       = func(id string) error {
 		return uuid.Validate(id)
 	}
 )
@@ -78,6 +79,19 @@ func ValidateEmail(value string) error {
 
 	if _, err := mail.ParseAddress(value); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func ValidateSecretCode(value string) error {
+	if ValidateString(value, 6, 6) != nil {
+		return fmt.Errorf("must contain exactly 6 digits")
+	}
+
+	_, err := strconv.Atoi(value)
+	if err != nil {
+		return fmt.Errorf("must contain only digits")
 	}
 
 	return nil

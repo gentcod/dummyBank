@@ -63,7 +63,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 				asynq.ProcessIn(10 * time.Second),
 				asynq.Queue(worker.QueueCritical),
 			}
-		
+
 			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
 		},
 	}

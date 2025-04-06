@@ -20,7 +20,7 @@ import (
 )
 
 func TestGetAccountByIdAPI(t *testing.T) {
-	testServer:= testServerInit(t)
+	testServer := testServerInit(t)
 	account, user := randomAccount(t)
 
 	//Build stubs
@@ -42,8 +42,8 @@ func TestGetAccountsAPI(t *testing.T) {
 	accounts, user := randomAccounts(int(pageSize), t)
 
 	arg := db.GetAccountsParams{
-		Owner: user.ID,
-		Limit: pageSize,
+		Owner:  user.ID,
+		Limit:  pageSize,
 		Offset: (pageId - 1) * pageSize,
 	}
 
@@ -59,23 +59,23 @@ func TestGetAccountsAPI(t *testing.T) {
 
 //TODO: Implement code refractoring for different test cases
 
-//randomAccount generates a random account
+// randomAccount generates a random account
 func randomAccount(t *testing.T) (account db.Account, user db.User) {
 	user, password := randomUserAndPassword(t)
-	
+
 	if err := util.CheckPassword(password, user.HarshedPassword); err != nil {
 		return
 	}
 
 	return db.Account{
-		ID: uuid.New(),
-		Owner: user.ID,
-		Balance: util.RandomMoney(),
+		ID:       uuid.New(),
+		Owner:    user.ID,
+		Balance:  util.RandomMoney(),
 		Currency: util.RandomCur(),
 	}, user
 }
 
-//randomAccounts generates random accounts
+// randomAccounts generates random accounts
 func randomAccounts(num int, t *testing.T) ([]db.Account, db.User) {
 	var accounts []db.Account
 	user, _ := randomUserAndPassword(t)

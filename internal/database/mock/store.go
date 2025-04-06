@@ -170,6 +170,20 @@ func (mr *MockStoreMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockStore)(nil).DeleteUser), arg0, arg1)
 }
 
+// DeleteVerifyEmailCache mocks base method.
+func (m *MockStore) DeleteVerifyEmailCache(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteVerifyEmailCache", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVerifyEmailCache indicates an expected call of DeleteVerifyEmailCache.
+func (mr *MockStoreMockRecorder) DeleteVerifyEmailCache(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVerifyEmailCache", reflect.TypeOf((*MockStore)(nil).DeleteVerifyEmailCache), arg0, arg1)
+}
+
 // GetAccount mocks base method.
 func (m *MockStore) GetAccount(arg0 context.Context, arg1 uuid.UUID) (db.Account, error) {
 	m.ctrl.T.Helper()
@@ -380,12 +394,28 @@ func (mr *MockStoreMockRecorder) UpdateUser(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockStore)(nil).UpdateUser), arg0, arg1)
 }
 
+// VerfiyEmailTx mocks base method.
+func (m *MockStore) VerfiyEmailTx(arg0 context.Context, arg1 db.VerfiyEmailParams) (db.VerifyUserEmailRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerfiyEmailTx", arg0, arg1)
+	ret0, _ := ret[0].(db.VerifyUserEmailRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VerfiyEmailTx indicates an expected call of VerfiyEmailTx.
+func (mr *MockStoreMockRecorder) VerfiyEmailTx(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerfiyEmailTx", reflect.TypeOf((*MockStore)(nil).VerfiyEmailTx), arg0, arg1)
+}
+
 // VerifyUserEmail mocks base method.
-func (m *MockStore) VerifyUserEmail(arg0 context.Context, arg1 uuid.UUID) error {
+func (m *MockStore) VerifyUserEmail(arg0 context.Context, arg1 string) (db.VerifyUserEmailRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VerifyUserEmail", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(db.VerifyUserEmailRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // VerifyUserEmail indicates an expected call of VerifyUserEmail.

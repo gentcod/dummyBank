@@ -20,7 +20,7 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 	if err != nil {
 		return nil, unauthenticatedError(err)
 	}
-	
+
 	violations := validateUpdateUserRequest(req)
 	if violations != nil {
 		return nil, valiateParameters(violations)

@@ -10,16 +10,16 @@ import (
 	"github.com/gentcod/DummyBank/worker"
 )
 
-//Server serves gRPC requests for our banking service.
+// Server serves gRPC requests for our banking service.
 type Server struct {
 	pb.UnimplementedDummyBankServer
-	config util.Config
-	store db.Store
-	tokenGenerator token.Generator
+	config          util.Config
+	store           db.Store
+	tokenGenerator  token.Generator
 	taskDistributor worker.TaskDistributor
 }
 
-//NewServer creates a new gRPC server.
+// NewServer creates a new gRPC server.
 func NewServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) (*Server, error) {
 	tokenGenerator, err := token.NewPasetoGenerator(config.TokenSymmetricKey)
 	if err != nil {
@@ -27,9 +27,9 @@ func NewServer(config util.Config, store db.Store, taskDistributor worker.TaskDi
 	}
 
 	server := &Server{
-		config: config,
-		store: store,
-		tokenGenerator: tokenGenerator,
+		config:          config,
+		store:           store,
+		tokenGenerator:  tokenGenerator,
 		taskDistributor: taskDistributor,
 	}
 

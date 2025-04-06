@@ -19,7 +19,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 	if violations != nil {
 		return nil, valiateParameters(violations)
 	}
-	
+
 	user, err := server.store.GetUserWithPassword(ctx, req.GetUsername())
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -27,7 +27,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		}
 		return nil, status.Errorf(codes.Internal, "failed to get user: %v", err)
 	}
-	
+
 	err = util.CheckPassword(req.GetPassword(), user.HarshedPassword)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "user authentication error: %v", err)
@@ -46,25 +46,25 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 	metadata := server.extractMetadata(ctx)
 
 	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
-		ID: refreshPayload.ID,
-		Username: user.Username,
+		ID:           refreshPayload.ID,
+		Username:     user.Username,
 		RefreshToken: refreshToken,
-		UserAgent: metadata.UserAgent,
-		ClientIp: metadata.ClientIP,
-		IsBlocked: false,
-		ExpiresAt: refreshPayload.ExpiredAt,
+		UserAgent:    metadata.UserAgent,
+		ClientIp:     metadata.ClientIP,
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create user session: %v", err)
 	}
 
 	rsp := &pb.LoginUserResponse{
-		SessionId: session.ID.String(),
-		AccessToken: accessToken,
-		AccessTokenExpiredAt: timestamppb.New(accessPayload.ExpiredAt),
-		RefreshToken: refreshToken,
+		SessionId:             session.ID.String(),
+		AccessToken:           accessToken,
+		AccessTokenExpiredAt:  timestamppb.New(accessPayload.ExpiredAt),
+		RefreshToken:          refreshToken,
 		RefreshTokenExpiredAt: timestamppb.New(refreshPayload.ExpiredAt),
-		User: convertUser(user),
+		User:                  convertUser(user),
 	}
 	return rsp, nil
 }

@@ -13,22 +13,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//TestServer contains all configurations to run mock db tests for the api
+// TestServer contains all configurations to run mock db tests for the api
 type TestServer struct {
-	server *Server
-	recorder *httptest.ResponseRecorder
+	server    *Server
+	recorder  *httptest.ResponseRecorder
 	mockStore *mockdb.MockStore
 }
 
-//testServerInit initializes the mockstore, http reponse recorder and the test server.
-//It returns an initialized TestServer 
+// testServerInit initializes the mockstore, http reponse recorder and the test server.
+// It returns an initialized TestServer
 func testServerInit(t *testing.T) (testServer TestServer) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	testServer.mockStore = mockdb.NewMockStore(ctrl)
 
 	config := util.Config{
-		TokenSymmetricKey: util.RandomStr(32),
+		TokenSymmetricKey:   util.RandomStr(32),
 		AccessTokenDuration: time.Minute,
 	}
 
@@ -44,5 +44,5 @@ func testServerInit(t *testing.T) (testServer TestServer) {
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
 	//Initialize connection test, terminate test if error occurs
-	os.Exit(m.Run()) 
+	os.Exit(m.Run())
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"html/template"
 )
+
 type Data struct {
 	Name             string
 	VerificationLink string

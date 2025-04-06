@@ -171,7 +171,7 @@ func runGatewayServer(config util.Config, store db.Store, taskDistributor worker
 
 func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer mail.MailSender) {
 	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
-	log.Info().Msg("start task processor")
+	log.Info().Msg("start task processor \n")
 	err := taskProcessor.Start()
 	if err != nil {
 		log.Fatal().AnErr("failed to start task processor:", err)

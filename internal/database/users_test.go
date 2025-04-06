@@ -12,16 +12,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//createRandomUser creates a random User for testing and returns a User object
+// createRandomUser creates a random User for testing and returns a User object
 func createRandomUser(t *testing.T) User {
 	hashedPassword, err := util.HashPassword(util.RandomStr(10))
 	require.NoError(t, err)
 
 	arg := CreateUserParams{
-		ID: uuid.New(),
-		Username: util.RandomStr(8),
-		FullName: util.RandomOwner(),
-		Email: util.RandomEmail(9),
+		ID:              uuid.New(),
+		Username:        util.RandomStr(8),
+		FullName:        util.RandomOwner(),
+		Email:           util.RandomEmail(9),
 		HarshedPassword: hashedPassword,
 	}
 
@@ -34,7 +34,7 @@ func createRandomUser(t *testing.T) User {
 	require.Equal(t, arg.HarshedPassword, user.HarshedPassword)
 
 	require.NotZero(t, user.ID)
-	require.True(t, user.PasswordChangedAt.IsZero()) 
+	require.True(t, user.PasswordChangedAt.IsZero())
 	require.NotZero(t, user.CreatedAt)
 
 	return user
@@ -53,10 +53,10 @@ func TestUpdateUser(t *testing.T) {
 		ID: ranUser.ID,
 		HarshedPassword: sql.NullString{
 			String: hashedPassword,
-			Valid: true,
+			Valid:  true,
 		},
 		PasswordChangedAt: sql.NullTime{
-			Time: time.Now(),
+			Time:  time.Now(),
 			Valid: true,
 		},
 	}

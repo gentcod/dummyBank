@@ -399,6 +399,108 @@ func (x *LoginUserResponse) GetRefreshTokenExpiredAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type VerifyEmailRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id    string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Token string `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
+}
+
+func (x *VerifyEmailRequest) Reset() {
+	*x = VerifyEmailRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_rpc_user_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VerifyEmailRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailRequest) ProtoMessage() {}
+
+func (x *VerifyEmailRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rpc_user_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailRequest.ProtoReflect.Descriptor instead.
+func (*VerifyEmailRequest) Descriptor() ([]byte, []int) {
+	return file_rpc_user_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *VerifyEmailRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *VerifyEmailRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type VerifyEmailResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	IsVerified bool `protobuf:"varint,1,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
+}
+
+func (x *VerifyEmailResponse) Reset() {
+	*x = VerifyEmailResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_rpc_user_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VerifyEmailResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailResponse) ProtoMessage() {}
+
+func (x *VerifyEmailResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rpc_user_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailResponse.ProtoReflect.Descriptor instead.
+func (*VerifyEmailResponse) Descriptor() ([]byte, []int) {
+	return file_rpc_user_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *VerifyEmailResponse) GetIsVerified() bool {
+	if x != nil {
+		return x.IsVerified
+	}
+	return false
+}
+
 var File_rpc_user_proto protoreflect.FileDescriptor
 
 var file_rpc_user_proto_rawDesc = []byte{
@@ -456,9 +558,16 @@ var file_rpc_user_proto_rawDesc = []byte{
 	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
 	0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x15, 0x72, 0x65, 0x66, 0x72,
 	0x65, 0x73, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x45, 0x78, 0x70, 0x69, 0x72, 0x65, 0x64, 0x41,
-	0x74, 0x42, 0x21, 0x5a, 0x1f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x67, 0x65, 0x6e, 0x74, 0x63, 0x6f, 0x64, 0x2f, 0x44, 0x75, 0x6d, 0x6d, 0x79, 0x42, 0x61, 0x6e,
-	0x6b, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x22, 0x3a, 0x0a, 0x12, 0x56, 0x65, 0x72, 0x69, 0x66, 0x79, 0x45, 0x6d, 0x61, 0x69, 0x6c,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x36, 0x0a,
+	0x13, 0x56, 0x65, 0x72, 0x69, 0x66, 0x79, 0x45, 0x6d, 0x61, 0x69, 0x6c, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x69, 0x73, 0x5f, 0x76, 0x65, 0x72, 0x69, 0x66,
+	0x69, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0a, 0x69, 0x73, 0x56, 0x65, 0x72,
+	0x69, 0x66, 0x69, 0x65, 0x64, 0x42, 0x21, 0x5a, 0x1f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x67, 0x65, 0x6e, 0x74, 0x63, 0x6f, 0x64, 0x2f, 0x44, 0x75, 0x6d, 0x6d,
+	0x79, 0x42, 0x61, 0x6e, 0x6b, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -473,7 +582,7 @@ func file_rpc_user_proto_rawDescGZIP() []byte {
 	return file_rpc_user_proto_rawDescData
 }
 
-var file_rpc_user_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_rpc_user_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_rpc_user_proto_goTypes = []any{
 	(*CreateUserRequest)(nil),     // 0: pb.CreateUserRequest
 	(*CreateUserResponse)(nil),    // 1: pb.CreateUserResponse
@@ -481,15 +590,17 @@ var file_rpc_user_proto_goTypes = []any{
 	(*UpdateUserResponse)(nil),    // 3: pb.UpdateUserResponse
 	(*LoginUserRequest)(nil),      // 4: pb.LoginUserRequest
 	(*LoginUserResponse)(nil),     // 5: pb.LoginUserResponse
-	(*User)(nil),                  // 6: pb.User
-	(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
+	(*VerifyEmailRequest)(nil),    // 6: pb.VerifyEmailRequest
+	(*VerifyEmailResponse)(nil),   // 7: pb.VerifyEmailResponse
+	(*User)(nil),                  // 8: pb.User
+	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
 }
 var file_rpc_user_proto_depIdxs = []int32{
-	6, // 0: pb.CreateUserResponse.user:type_name -> pb.User
-	6, // 1: pb.UpdateUserResponse.user:type_name -> pb.User
-	6, // 2: pb.LoginUserResponse.user:type_name -> pb.User
-	7, // 3: pb.LoginUserResponse.access_token_expired_at:type_name -> google.protobuf.Timestamp
-	7, // 4: pb.LoginUserResponse.refresh_token_expired_at:type_name -> google.protobuf.Timestamp
+	8, // 0: pb.CreateUserResponse.user:type_name -> pb.User
+	8, // 1: pb.UpdateUserResponse.user:type_name -> pb.User
+	8, // 2: pb.LoginUserResponse.user:type_name -> pb.User
+	9, // 3: pb.LoginUserResponse.access_token_expired_at:type_name -> google.protobuf.Timestamp
+	9, // 4: pb.LoginUserResponse.refresh_token_expired_at:type_name -> google.protobuf.Timestamp
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
@@ -576,6 +687,30 @@ func file_rpc_user_proto_init() {
 				return nil
 			}
 		}
+		file_rpc_user_proto_msgTypes[6].Exporter = func(v any, i int) any {
+			switch v := v.(*VerifyEmailRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rpc_user_proto_msgTypes[7].Exporter = func(v any, i int) any {
+			switch v := v.(*VerifyEmailResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_rpc_user_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
@@ -584,7 +719,7 @@ func file_rpc_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_rpc_user_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

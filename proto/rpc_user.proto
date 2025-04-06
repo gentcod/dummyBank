@@ -42,3 +42,12 @@ message LoginUserResponse {
    google.protobuf.Timestamp access_token_expired_at = 5;
    google.protobuf.Timestamp refresh_token_expired_at = 6;
 }
+
+message VerifyEmailRequest {
+   string id = 1;
+   string token = 2;
+}
+
+message VerifyEmailResponse {
+   bool is_verified = 1;
+}

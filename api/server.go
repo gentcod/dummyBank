@@ -30,9 +30,9 @@ func NewServer(config util.Config, store db.Store, taskDistributor worker.TaskDi
 	}
 
 	server := &Server{
-		config:         config,
-		store:          store,
-		tokenGenerator: tokenGenerator,
+		config:          config,
+		store:           store,
+		tokenGenerator:  tokenGenerator,
 		taskDistributor: taskDistributor,
 	}
 
