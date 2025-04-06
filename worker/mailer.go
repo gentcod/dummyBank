@@ -71,21 +71,19 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(
 	}
 
 	// SEND EMAIL
-	verifyLink := fmt.Sprintf("%s?id=%v&code=%d", domain, data.ID, data.SecretCode)
+	verifyLink := fmt.Sprintf("%s?id=%v&token=%d", domain, arg.Username, data.SecretCode)
 	recipient := mailer.Recipient{
 		Name:             user.Username,
 		Email:            user.Email,
 		VerificationLink: verifyLink,
 	}
 
-	log.Info().Any("%v",data)
-	log.Info().Any("%v+",processor.mailer)
-
-	if err := processor.mailer.SendEmail(recipient); err != nil {
+	err = processor.mailer.SendEmail(recipient)
+	if err != nil {
 		return fmt.Errorf("failed to send user verification email: %w", err)
 	}
+
 	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
-		Str("email", user.Email).
 		Msg(fmt.Sprintf("processed task: email sent to %s", recipient.Email))
 
 	return nil

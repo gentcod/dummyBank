@@ -13,9 +13,9 @@ import (
 )
 
 func GrpcLogger(
-	ctx context.Context, 
-	req interface{}, 
-	info *grpc.UnaryServerInfo, 
+	ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (resp interface{}, err error) {
 	start := time.Now()
@@ -23,7 +23,7 @@ func GrpcLogger(
 	duration := time.Since(start)
 
 	statusCode := codes.Unknown
-	if st,ok := status.FromError(err); ok {
+	if st, ok := status.FromError(err); ok {
 		statusCode = st.Code()
 	}
 
@@ -31,7 +31,6 @@ func GrpcLogger(
 	if err != nil {
 		logger = log.Error().Err(err)
 	}
-
 
 	logger.Str("protocol", "grpc").
 		Str("method", info.FullMethod).
@@ -46,7 +45,7 @@ func GrpcLogger(
 type ResponseRecorder struct {
 	http.ResponseWriter
 	StatusCode int
-	Body []byte
+	Body       []byte
 }
 
 func (rec *ResponseRecorder) WriteHeader(statusCode int) {
@@ -60,11 +59,11 @@ func (rec *ResponseRecorder) Write(body []byte) (int, error) {
 }
 
 func HttpLogger(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(res http.ResponseWriter,req *http.Request) {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		start := time.Now()
 		rec := &ResponseRecorder{
 			ResponseWriter: res,
-			StatusCode: http.StatusOK,
+			StatusCode:     http.StatusOK,
 		}
 		handler.ServeHTTP(rec, req)
 		duration := time.Since(start)
@@ -73,8 +72,7 @@ func HttpLogger(handler http.Handler) http.Handler {
 		if rec.StatusCode != http.StatusOK {
 			logger = log.Error().Bytes("body", rec.Body)
 		}
-	
-	
+
 		logger.Str("protocol", "http").
 			Str("method", req.Method).
 			Str("path", req.RequestURI).
@@ -82,6 +80,6 @@ func HttpLogger(handler http.Handler) http.Handler {
 			Str("status", http.StatusText(rec.StatusCode)).
 			Dur("duration", duration).
 			Msg("gRPC request invoked")
-	
+
 	})
 }

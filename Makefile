@@ -1,5 +1,18 @@
 current_dir = $(shell pwd)
+.PHONY: build
+build:
+	gofmt -l -s -w .
+	go build -o bin/dummybank .
+
+.PHONY: run
+run:
+	./bin/dummybank
+
 sqlc:
+	sqlc generate
+
+.PHONY: sqlc-docker
+sqlc-docker:
 	docker run --rm -v $(current_dir):/src -w /src sqlc/sqlc generate
 
 mysql:
@@ -22,6 +35,10 @@ gooseup:
 
 goosedown:
 	goose -dir sql/schemas postgres postgres://root:secret@localhost:5431/dummy_bank?sslmode=disable down
+
+.PHONY: goosedownall
+goosedownall:
+	goose -dir sql/schemas postgres postgres://root:secret@localhost:5431/dummy_bank?sslmode=disable down-to 0
 
 migrateCreate:
 	migrate create -ext sql -dir sql/migrations -seq add_sessions

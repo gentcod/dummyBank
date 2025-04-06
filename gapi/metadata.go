@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	grpcUserAgent = "user-agent"
+	grpcUserAgent    = "user-agent"
 	gatewayUserAgent = "grpcgateway-user-agent"
-	gatewayClientIP = "x-forwarded-for"
+	gatewayClientIP  = "x-forwarded-for"
 )
 
 type Metadata struct {

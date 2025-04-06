@@ -174,10 +174,10 @@ func TestCache(t *testing.T) {
 	store := NewStore(testDB, testRDB)
 	arg := RedisData{
 		Username: util.RandomOwner(),
-		Email: util.RandomEmail(7),
+		Email:    util.RandomEmail(7),
 	}
 
-	exp,err := time.ParseDuration(testExpiration)
+	exp, err := time.ParseDuration(testExpiration)
 	require.NoError(t, err)
 
 	result, err := store.CreateVerifyEmailCache(context.Background(), arg, exp)
@@ -197,11 +197,11 @@ func TestCacheExp(t *testing.T) {
 	store := NewStore(testDB, testRDB)
 	arg := RedisData{
 		Username: util.RandomOwner(),
-		Email: util.RandomEmail(7),
+		Email:    util.RandomEmail(7),
 	}
 	data, err := store.CreateVerifyEmailCache(context.Background(), arg, time.Second)
 	require.NoError(t, err)
-	
+
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	<-ticker.C

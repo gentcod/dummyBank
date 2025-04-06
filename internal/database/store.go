@@ -12,7 +12,11 @@ import (
 // Store provides all functions to execute db SQL queries and transactions
 type Store interface {
 	Querier
+
+	// TransferTx executes a money transfer within a database transaction
 	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTXResult, error)
+
+	// CreateUserTx creates a new user and sends a verification email
 	CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResult, error)
 
 	// CreateVerifyEmailCache stores some data with expiration in redis cache
@@ -20,6 +24,12 @@ type Store interface {
 
 	// GetVerifyEmailCache retrieves stored data in redis cache
 	GetVerifyEmailCache(ctx context.Context, key string) (RedisData, error)
+
+	// DeleteVerifyEmailCache deletes stored data in redis cache
+	DeleteVerifyEmailCache(ctx context.Context, key string) error
+
+	// VerfiyEmailTx verifies the email of a user
+	VerfiyEmailTx(ctx context.Context, arg VerfiyEmailParams) (VerifyUserEmailRow, error)
 }
 
 // SQLStore provides all functions to execute db SQL queries

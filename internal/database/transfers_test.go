@@ -10,14 +10,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//createRandomTransfer creates a random Transfer for testing. Returns a Transfer object.
+// createRandomTransfer creates a random Transfer for testing. Returns a Transfer object.
 func createRandomTransfer(t *testing.T) Transfer {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	arg := CreateTransferParams{
-		SenderID: account1.ID,
+		SenderID:    account1.ID,
 		RecipientID: account2.ID,
-		Amount: util.RandomMoney(),
+		Amount:      util.RandomMoney(),
 	}
 
 	transfer, err := testQueries.CreateTransfer(context.Background(), arg)
@@ -56,7 +56,7 @@ func TestGetTransfers(t *testing.T) {
 		createRandomTransfer(t)
 	}
 	args := GetTransfersParams{
-		Limit: 3,
+		Limit:  3,
 		Offset: 3,
 	}
 

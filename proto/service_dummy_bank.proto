@@ -32,7 +32,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 service DummyBank {
    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
       option (google.api.http) = {
-         post: "/api/v1/user/signup"
+         post: "/api/v1/users/signup"
          body: "*"
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -42,7 +42,7 @@ service DummyBank {
    }
    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
       option (google.api.http) = {
-         patch: "/api/v1/user/update"
+         patch: "/api/v1/users/update"
          body: "*"
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -52,7 +52,7 @@ service DummyBank {
    }
    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
       option (google.api.http) = {
-         post: "/api/v1/user/login"
+         post: "/api/v1/users/login"
          body: "*"
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -60,10 +60,19 @@ service DummyBank {
          summary: "Login User"
       };
    }
+   rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse) {
+      option (google.api.http) = {
+         get: "/api/v1/users/verify-email"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+         description: "Use this endpoint to verify a user's email"
+         summary: "Verify User Email"
+      };
+   }
 
    rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {
       option (google.api.http) = {
-         post: "/api/v1/account/create"
+         post: "/api/v1/accounts/create"
          body: "*"
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -73,7 +82,7 @@ service DummyBank {
    }
    rpc UpdateAccount (UpdateAccountRequest) returns (UpdateAccountResponse) {
       option (google.api.http) = {
-         post: "/api/v1/account/update"
+         post: "/api/v1/accounts/update"
          body: "*"
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {

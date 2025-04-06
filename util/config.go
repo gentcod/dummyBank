@@ -7,20 +7,20 @@ import (
 )
 
 type Config struct {
-	Environment string
-	PortAddress string
-	GrpcAddress string
-	DBDriver string
-	DBUrl string
-	TokenSymmetricKey string
-	TokenSecretKey string
-	AccessTokenDuration time.Duration
+	Environment          string
+	PortAddress          string
+	GrpcAddress          string
+	DBDriver             string
+	DBUrl                string
+	TokenSymmetricKey    string
+	TokenSecretKey       string
+	AccessTokenDuration  time.Duration
 	RefreshTokenDuration time.Duration
-	MigrationUrl string
-	RedisAddress string
-	MailUser string
-	MailPassword string
-	RedisCacheExp time.Duration
+	MigrationUrl         string
+	RedisAddress         string
+	MailUser             string
+	MailPassword         string
+	RedisCacheExp        time.Duration
 }
 
 func LoadConfig(path string) (config Config, err error) {

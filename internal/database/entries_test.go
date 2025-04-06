@@ -2,19 +2,19 @@ package db
 
 import (
 	"context"
-	"time"
 	"testing"
+	"time"
 
 	"github.com/gentcod/DummyBank/util"
 	"github.com/stretchr/testify/require"
 )
 
-//createRandomEntry creates a random Entry for testing. Returns an Entry object.
+// createRandomEntry creates a random Entry for testing. Returns an Entry object.
 func createRandomEntry(t *testing.T) Entry {
 	account1 := createRandomAccount(t)
 	arg := CreateEntryParams{
 		AccountID: account1.ID,
-		Amount: util.RandomMoney(),
+		Amount:    util.RandomMoney(),
 	}
 
 	entry, err := testQueries.CreateEntry(context.Background(), arg)
@@ -51,7 +51,7 @@ func TestGetEntries(t *testing.T) {
 		createRandomEntry(t)
 	}
 	args := GetEntriesParams{
-		Limit: 3,
+		Limit:  3,
 		Offset: 3,
 	}
 

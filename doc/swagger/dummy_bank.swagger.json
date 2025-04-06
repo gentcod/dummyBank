@@ -21,7 +21,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/account/create": {
+    "/api/v1/accounts/create": {
       "post": {
         "summary": "Create Account",
         "description": "Use this endpoint to create an account based on specified currency",
@@ -55,7 +55,7 @@
         ]
       }
     },
-    "/api/v1/account/update": {
+    "/api/v1/accounts/update": {
       "post": {
         "summary": "Update Account",
         "description": "Use this endpoint to update an account balance based on specified currency",
@@ -89,7 +89,7 @@
         ]
       }
     },
-    "/api/v1/user/login": {
+    "/api/v1/users/login": {
       "post": {
         "summary": "Login User",
         "description": "Use this endpoint to authenticate a user",
@@ -123,7 +123,7 @@
         ]
       }
     },
-    "/api/v1/user/signup": {
+    "/api/v1/users/signup": {
       "post": {
         "summary": "Create new User",
         "description": "Use this endpoint to create a user account",
@@ -157,7 +157,7 @@
         ]
       }
     },
-    "/api/v1/user/update": {
+    "/api/v1/users/update": {
       "patch": {
         "summary": "Update existing User",
         "description": "Use this endpoint to update a user account",
@@ -184,6 +184,44 @@
             "schema": {
               "$ref": "#/definitions/pbUpdateUserRequest"
             }
+          }
+        ],
+        "tags": [
+          "DummyBank"
+        ]
+      }
+    },
+    "/api/v1/users/verify-email": {
+      "get": {
+        "summary": "Verify User Email",
+        "description": "Use this endpoint to verify a user's email",
+        "operationId": "DummyBank_VerifyEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbVerifyEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -356,6 +394,18 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbVerifyEmailResponse": {
+      "type": "object",
+      "properties": {
+        "isVerified": {
+          "type": "boolean"
         }
       }
     },

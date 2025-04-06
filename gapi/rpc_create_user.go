@@ -41,11 +41,11 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 				Username: user.Username,
 			}
 			opts := []asynq.Option{
-				asynq.MaxRetry(10),
+				asynq.MaxRetry(2),
 				asynq.ProcessIn(10 * time.Second),
 				asynq.Queue(worker.QueueCritical),
 			}
-		
+
 			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
 		},
 	}
