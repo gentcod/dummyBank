@@ -22,7 +22,7 @@ func (logger *Logger) Printf(ctx context.Context, format string, v ...interface{
 	log.WithLevel(zerolog.DebugLevel).Msgf(format, v...)
 }
 
-func (logger *Logger) Debug(args ...interface{}) {
+func (logger *Logger) Debug(args ...any) {
 	logger.Print(zerolog.DebugLevel, args...)
 }
 
