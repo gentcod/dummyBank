@@ -19,7 +19,7 @@ mysql:
 	docker run --name mysql8 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -d mysql:8
 
 postgres:
-	docker run --name postgres12 --network bank-network  postgres12 -p 5431:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
+	docker run --name postgresdbs -p 5431:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:17-alpine
 
 postgresBash:
 	docker exec -it postgresdbs psql -h localhost -U root -d dummy_bank
@@ -48,6 +48,7 @@ test:
 
 mock:
 	mockgen -package mockdb -destination internal/database/mock/store.go github.com/gentcod/DummyBank/internal/database Store
+	mockgen -package mockwk -destination worker/mock/distributo.go github.com/gentcod/DummyBank/worker TaskDistributor
 
 buildimage:
 	docker build -t dummybank:latest .

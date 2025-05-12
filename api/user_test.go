@@ -35,7 +35,7 @@ func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 
 	e.arg.CreateUserParams.HarshedPassword = arg.CreateUserParams.HarshedPassword
 	e.arg.CreateUserParams.ID = arg.CreateUserParams.ID
-	return reflect.DeepEqual(e.arg, arg)
+	return reflect.DeepEqual(e.arg.CreateUserParams, arg.CreateUserParams)
 }
 
 func (e eqCreateUserParamsMatcher) String() string {
@@ -47,7 +47,6 @@ func EqCreateUserParams(arg db.CreateUserTxParams, password string) gomock.Match
 }
 
 func TestCreateUserAPI(t *testing.T) {
-	t.Skip()
 	testServer := testServerInit(t)
 
 	user, password := randomUserAndPassword(t)
