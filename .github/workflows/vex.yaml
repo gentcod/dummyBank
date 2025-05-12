@@ -11,11 +11,12 @@ jobs:
         steps: 
           - name: Checkout
             uses: actions/checkout@v3
-
+            
           - name: Meterian Scanner
             uses: MeterianHQ/meterian-github-action@v1.0.17
             env:
               METERIAN_API_TOKEN: ${{ secrets.METERIAN_API_TOKEN }}
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             with:
               autofix_security: conservative
               autofix_stability: safe
