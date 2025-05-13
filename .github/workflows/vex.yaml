@@ -38,16 +38,7 @@ jobs:
           echo '```' >> issue_body.txt
           echo "vuln_count=$vulns" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Issue
-        if: steps.parse_results.outputs.vuln_count != '0'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh issue create \
-            --title "Vulnerability Scan Report - $(date +'%Y-%m-%d')" \
-            --body-file issue_body.txt \
-
-      - name: Meterian Scanner
+      - name: Run Meterian Scanner
         uses: MeterianHQ/meterian-github-action@v1.0.17
         continue-on-error: true
         env:
@@ -59,5 +50,27 @@ jobs:
           autofix_stability: safe
           autofix_with_pr: true
           autofix_with_issue: true
+      
+      - name: Extract Meterian Report Link
+        id: meterian_link
+        run: |
+          url=$(grep -o 'https://www.meterian.com/projects/?[^ ]*' meterian_output.log || echo "")
+          echo "link=$url" >> $GITHUB_OUTPUT
 
+      - name: Append Meterian Link to Issue
+        if: steps.meterian_link.outputs.link != ''
+        run: |
+          echo "" >> issue_body.txt
+          echo "🔍 Check Meterian report here: ${{
+            steps.meterian_link.outputs.link
+          }}" >> issue_body.txt
+
+      - name: Create GitHub Issue
+        if: steps.parse_results.outputs.vuln_count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Vulnerability Scan Report - $(date +'%Y-%m-%d')" \
+            --body-file issue_body.txt \
 #            --label "security,grype,automated-scan"
