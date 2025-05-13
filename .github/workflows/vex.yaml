@@ -1,23 +1,33 @@
 #main.yml
 
-name: Meterian Scanner workflow
+name: Vulnerability Scan workflow
 
-on: push
+on:
+  pull_request:
+    branches: ["main"]
 
 jobs:
-    meterian_scan:
-        name: Meterian client scan
-        runs-on: ubuntu-latest
-        steps: 
-          - name: Checkout
-            uses: actions/checkout@v3
-            
-          - name: Meterian Scanner
-            uses: MeterianHQ/meterian-github-action@v1.0.17
-            env:
-              METERIAN_API_TOKEN: ${{ secrets.METERIAN_API_TOKEN }}
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            with:
-              autofix_security: conservative
-              autofix_stability: safe
-              autofix_with_pr: true
+  vex_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      
+      - name: Generate CycloneDX SBOM
+        uses: CycloneDX/gh-gomod-generate-sbom@v2
+        with:
+          version: v1
+          args: mod -licenses -json -output bom.json
+
+      # - name: Meterian Scanner
+      #   uses: MeterianHQ/meterian-github-action@v1.0.17
+      #   env:
+      #     METERIAN_API_TOKEN: ${{ secrets.METERIAN_API_TOKEN }}
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #     ALWAYS_OPEN_PRS: true
+        # with:
+        #   autofix_security: conservative          
+        #   autofix_stability: safe
+        #   autofix_with_pr: true
+        #   autofix_with_issue: true

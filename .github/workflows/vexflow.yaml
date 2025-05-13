@@ -1,0 +1,60 @@
+#main.yml
+
+name: Vulnerability Scan workflow
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build-and-vex:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      attestations: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # ---------- Build Step ----------
+      - name: Build binary
+        run: go build -o app .
+
+      - name: Calculate SHA256 hash
+        id: compute-hash
+        run: |
+          sha256sum app | tee app.sha256 > hash.txt
+          HASH=$(awk '{print $1}' hash.txt)
+          echo "subject=sha256:$HASH" >> $GITHUB_ENV
+
+      # ---------- Tool Setup ----------
+      - name: Setup VEXFlow
+        uses: carabiner-dev/actions/install/vexflow@HEAD
+
+      - name: Setup AMPEL
+        uses: carabiner-dev/actions/install/ampel@HEAD
+
+      # ---------- OSV Scanner ----------
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.0
+        continue-on-error: true
+        with:
+          scan-args: --output=osv-results.json --format=json .
+
+      # ---------- VEX Generation ----------
+      - name: Assemble VEX Attestation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          vexflow assemble --repo=gentcod/dummyBank --triage-repo=puerco/vftest > main.openvex.json
+
+      # ---------- Policy Verification ----------
+      - name: Verify Branch Policy
+        run: |
+          ampel verify \
+            --subject=$subject \
+            --policy policy/CRA-AI-2.a-XFORM.ampel.json \
+            --attestation osv-results.json \
+            --attestation main.openvex.json \
+            --format=html >> $GITHUB_STEP_SUMMARY
+
