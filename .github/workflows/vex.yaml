@@ -41,14 +41,14 @@ jobs:
         uses: google/osv-scanner-action/osv-scanner-action@v2.0.0
         continue-on-error: true
         with:
-          scan-args: --output=osv-results.json --format=json app
+          scan-args: --output=osv-results.json --format=json .
 
       # ---------- VEX Generation ----------
       - name: Assemble VEX Attestation
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          vexflow assemble --repo=puerco/lab-vexable-repo --triage-repo=puerco/vftest > main.openvex.json
+          vexflow assemble --repo=gentcod/dummyBank --triage-repo=puerco/vftest > main.openvex.json
 
       # ---------- Policy Verification ----------
       - name: Verify Branch Policy
@@ -74,12 +74,12 @@ jobs:
           version: v1
           args: mod -licenses -json -output bom.json
 
-      - name: Meterian Scanner
-        uses: MeterianHQ/meterian-github-action@v1.0.17
-        env:
-          METERIAN_API_TOKEN: ${{ secrets.METERIAN_API_TOKEN }}
-          GITHUB_TOKEN: ${{ github.token }}
-          ALWAYS_OPEN_PRS: true
+      # - name: Meterian Scanner
+      #   uses: MeterianHQ/meterian-github-action@v1.0.17
+      #   env:
+      #     METERIAN_API_TOKEN: ${{ secrets.METERIAN_API_TOKEN }}
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #     ALWAYS_OPEN_PRS: true
         # with:
         #   autofix_security: conservative          
         #   autofix_stability: safe
