@@ -50,7 +50,25 @@ jobs:
           # server: ${{ vars.KUBESCAPE_SERVER }}
           # # Optional: Scan a specific path. Default will scan the whole repository
           # files: "examples/*.yaml"
-      - name: Upload Kubescape scan results to Github Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: results.sarif
+          
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -s results.sarif ]; then
+            echo "results_found=true" >> $GITHUB_ENV
+          else
+            echo "No results found, skipping issue creation."
+            echo "results_found=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Issue with Kubescape Results
+        if: env.results_found == 'true'
+        run: |
+          body=$(jq -r '.runs[0].results[]?.message.text' results.sarif | head -n 20 | sed 's/^/- /')
+          title="Kubescape Scan Report - $(date +'%Y-%m-%d')"
+          gh issue create \
+            --title "$title" \
+            --body "**Top scan findings:**\n\n$body" \
+            --label "security,kubescape"
+        env:
+          GH_TOKEN: ${{ github.token }}
