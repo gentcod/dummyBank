@@ -1,6 +1,6 @@
 #main.yml
 
-name: Vulnerability Scan workflow
+name: Vexflow vulnerability Scan workflow
 
 on:
   workflow_dispatch: {}
