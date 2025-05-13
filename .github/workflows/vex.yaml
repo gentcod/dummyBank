@@ -46,7 +46,6 @@ jobs:
           gh issue create \
             --title "Vulnerability Scan Report - $(date +'%Y-%m-%d')" \
             --body-file issue_body.txt \
-            --label "security,grype,automated-scan"
 
       - name: Meterian Scanner
         uses: MeterianHQ/meterian-github-action@v1.0.17
@@ -60,3 +59,5 @@ jobs:
           autofix_stability: safe
           autofix_with_pr: true
           autofix_with_issue: true
+
+#            --label "security,grype,automated-scan"
