@@ -20,7 +20,7 @@ jobs:
 
       # ---------- Build Step ----------
       - name: Build binary
-        run: go build -o app ./...
+        run: go build -o app .
 
       - name: Calculate SHA256 hash
         id: compute-hash
