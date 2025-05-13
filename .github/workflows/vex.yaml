@@ -1,8 +1,7 @@
 name: Vulnerability Scan workflow
 
 on:
-  pull_request:
-    branches: ["main"]
+  workflow_dispatch: {}
 
 jobs:
   vex_scan:
